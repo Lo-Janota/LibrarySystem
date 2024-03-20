@@ -34,18 +34,11 @@ public class LoginScreen extends JFrame {
         passwordField.setAlignmentX(Component.CENTER_ALIGNMENT);
         loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Adiciona uma margem ao redor dos campos
         fieldsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Adiciona o fieldsPanel ao centro da tela de login
         add(fieldsPanel, BorderLayout.CENTER);
-
-        // Adiciona o botão de login na parte inferior
-        loginButton.setLayout(new FlowLayout(FlowLayout.CENTER)); // Centraliza o botão no painel
-        loginButton.add(loginButton);
         add(loginButton, BorderLayout.SOUTH);
 
-        // Ação do botão de login
         loginButton.addActionListener(e -> {
             new Menu().setVisible(true); // Abre a janela do menu ao clicar no botão
             this.setVisible(false); // Faz a tela de login desaparecer
