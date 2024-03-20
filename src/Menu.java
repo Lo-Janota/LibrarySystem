@@ -17,12 +17,12 @@ public class Menu extends JFrame {
         // Cria e adiciona os componentes na tela
         searchField = new JTextField(20);
         searchButton = new JButton("🔎");
-        addButton = new JButton("Adicionar");
-        deleteButton = new JButton("Excluir");
+        addButton = new JButton("➕");
+        deleteButton = new JButton("🗑️");
 
         searchButton.setPreferredSize(new Dimension(60, 30));
-        addButton.setPreferredSize(new Dimension(100, 30));
-        deleteButton.setPreferredSize(new Dimension(100, 30));
+        addButton.setPreferredSize(new Dimension(60, 30));
+        deleteButton.setPreferredSize(new Dimension(60, 30));
 
         add(searchField);
         add(searchButton);
@@ -30,5 +30,4 @@ public class Menu extends JFrame {
         add(deleteButton);
     }
 
-    
 }
