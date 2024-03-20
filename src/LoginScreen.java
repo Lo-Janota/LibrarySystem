@@ -70,8 +70,12 @@ public class LoginScreen extends JFrame {
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     // Verifica se o usuário e a senha foram preenchidos
-                    if (usernameField.getText().isEmpty() || passwordField.getPassword().length == 0) {
-                        JOptionPane.showMessageDialog(LoginScreen.this, "Por favor, preencha usuário e senha.");
+                    if (usernameField.getText().isEmpty() && passwordField.getPassword().length == 0) {
+                        JOptionPane.showMessageDialog(LoginScreen.this, "Por favor, preencha os campos: Usuário e Senha.");
+                    } else if (usernameField.getText().isEmpty()) {
+                        JOptionPane.showMessageDialog(LoginScreen.this, "Por favor, preencha o campo: Usuário.");
+                    } else if (passwordField.getPassword().length == 0){
+                        JOptionPane.showMessageDialog(LoginScreen.this, "Por favor, preencha o campo: Senha.");
                     } else {
                         // Exemplo de abrir outra tela (Menu) após o login
                         new Menu().setVisible(true);
@@ -83,8 +87,12 @@ public class LoginScreen extends JFrame {
 
         loginButton.addActionListener(e -> {
             // Verifica se o usuário e a senha foram preenchidos
-            if (usernameField.getText().isEmpty() || passwordField.getPassword().length == 0) {
-                JOptionPane.showMessageDialog(LoginScreen.this, "Por favor, preencha usuário e senha.");
+            if (usernameField.getText().isEmpty() && passwordField.getPassword().length == 0) {
+                JOptionPane.showMessageDialog(LoginScreen.this, "Por favor, preencha os campos: Usuário e Senha.");
+            } else if (usernameField.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(LoginScreen.this, "Por favor, preencha o campo: Usuário.");
+            } else if (passwordField.getPassword().length == 0){
+                JOptionPane.showMessageDialog(LoginScreen.this, "Por favor, preencha o campo: Senha.");
             } else {
                 // Exemplo de abrir outra tela (Menu) após o login
                 new Menu().setVisible(true);
