@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
 
 public class LoginScreen extends JFrame {
     private JLabel usernameLabel;
@@ -63,9 +64,32 @@ public class LoginScreen extends JFrame {
         // Adiciona o JPanel do botão de login ao final da tela
         add(buttonPanel, BorderLayout.SOUTH);
 
+         // Adiciona um KeyListener ao campo de senha para verificar se a tecla Enter foi pressionada
+         passwordField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    // Verifica se o usuário e a senha foram preenchidos
+                    if (usernameField.getText().isEmpty() || passwordField.getPassword().length == 0) {
+                        JOptionPane.showMessageDialog(LoginScreen.this, "Por favor, preencha usuário e senha.");
+                    } else {
+                        // Exemplo de abrir outra tela (Menu) após o login
+                        new Menu().setVisible(true);
+                        setVisible(false);
+                    }
+                }
+            }
+        });
+
         loginButton.addActionListener(e -> {
-            new Menu().setVisible(true); // Abre a janela do menu ao clicar no botão
-            this.setVisible(false); // Faz a tela de login desaparecer
+            // Verifica se o usuário e a senha foram preenchidos
+            if (usernameField.getText().isEmpty() || passwordField.getPassword().length == 0) {
+                JOptionPane.showMessageDialog(LoginScreen.this, "Por favor, preencha usuário e senha.");
+            } else {
+                // Exemplo de abrir outra tela (Menu) após o login
+                new Menu().setVisible(true);
+                setVisible(false);
+            }
         });
 
     }
