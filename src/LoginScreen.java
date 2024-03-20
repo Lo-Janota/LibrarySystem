@@ -18,7 +18,7 @@ public class LoginScreen extends JFrame {
         // Cria um JPanel para conter a imagem no topo e centralizada
         JPanel imagePanel = new JPanel(new BorderLayout());
         // Carrega a imagem do arquivo imageLogin.jpg
-        ImageIcon icon = new ImageIcon("imageLogin.jpg");
+        ImageIcon icon = new ImageIcon("Imagens/imageLogin.jpg");
         // Redimensiona a imagem para um tamanho específico
         Image image = icon.getImage().getScaledInstance(150, 150, Image.SCALE_SMOOTH);
         // Cria um JLabel com a imagem redimensionada e o posiciona no centro do JPanel
