@@ -18,11 +18,16 @@ public class Menu extends JFrame {
         searchField = new JTextField(20);
         searchButton = new JButton("🔎");
         addButton = new JButton("➕");
-        deleteButton = new JButton("🗑️");
+        deleteButton = new JButton("❌");
 
         searchButton.setPreferredSize(new Dimension(60, 30));
         addButton.setPreferredSize(new Dimension(60, 30));
         deleteButton.setPreferredSize(new Dimension(60, 30));
+
+        // Adiciona tooltips aos botões
+        searchButton.setToolTipText("Pesquisar");
+        addButton.setToolTipText("Adicionar");
+        deleteButton.setToolTipText("Excluir");
 
         add(searchField);
         add(searchButton);
