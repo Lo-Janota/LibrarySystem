@@ -1,17 +1,11 @@
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-
-
 
 public class LoginScreen extends JFrame {
     private JLabel usernameLabel;
     private JLabel passwordLabel;
     private JTextField usernameField;
     private JPasswordField passwordField;
-    private ImageIcon backgroundImage; // Removido o final
 
     public LoginScreen() {
 
@@ -19,37 +13,44 @@ public class LoginScreen extends JFrame {
         setSize(400, 500); // Configura tamanho da janela
         setDefaultCloseOperation(EXIT_ON_CLOSE); // Configura ação ao fechar janela
         setLocationRelativeTo(null); // Centraliza janela
+        setLayout(new BorderLayout()); // Altera o layout principal para BorderLayout
+
         usernameLabel = new JLabel("Usuário:");
         passwordLabel = new JLabel("Senha:");
         usernameField = new JTextField(20);
         passwordField = new JPasswordField(20);
-
-        try {
-            backgroundImage = new ImageIcon(ImageIO.read(new File("./Login.png")));
-        } catch (IOException e) {
-            System.err.println("Error loading background image: " + e.getMessage());
-            backgroundImage = null; // Agora é permitido pois 'backgroundImage' não é final
-            // Removido o 'return'; o frame ainda pode ser exibido sem a imagem de fundo.
-        }
-
-        // Configurações da interface
-        setLayout(new BorderLayout());
-        JLabel backgroundLabel = new JLabel(backgroundImage);
         JButton loginButton = new JButton("Login");
-        backgroundLabel.setLayout(new GridBagLayout());
-        add(backgroundLabel, BorderLayout.CENTER);
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(30, 10, 10, 10); // Margens
+        // Painel para agrupar os campos e labels
+        JPanel fieldsPanel = new JPanel();
+        fieldsPanel.setLayout(new BoxLayout(fieldsPanel, BoxLayout.Y_AXIS)); // Organiza os componentes verticalmente
+        fieldsPanel.add(usernameLabel);
+        fieldsPanel.add(usernameField);
+        fieldsPanel.add(passwordLabel);
+        fieldsPanel.add(passwordField);
 
-        // Adiciona componentes ao label de fundo
-        backgroundLabel.add(usernameLabel, gbc);
-        backgroundLabel.add(usernameField, gbc);
-        backgroundLabel.add(passwordLabel, gbc);
-        backgroundLabel.add(passwordField, gbc);
-        backgroundLabel.add(loginButton, gbc);
+        // Centraliza os componentes no fieldsPanel
+        usernameField.setAlignmentX(Component.CENTER_ALIGNMENT);
+        passwordField.setAlignmentX(Component.CENTER_ALIGNMENT);
+        loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // Adiciona uma margem ao redor dos campos
+        fieldsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        // Adiciona o fieldsPanel ao centro da tela de login
+        add(fieldsPanel, BorderLayout.CENTER);
+
+        // Adiciona o botão de login na parte inferior
+        loginButton.setLayout(new FlowLayout(FlowLayout.CENTER)); // Centraliza o botão no painel
+        loginButton.add(loginButton);
+        add(loginButton, BorderLayout.SOUTH);
+
+        // Ação do botão de login
+        loginButton.addActionListener(e -> {
+            new Menu().setVisible(true); // Abre a janela do menu ao clicar no botão
+            this.setVisible(false); // Faz a tela de login desaparecer
+        });
+
     }
 
     public static void main(String[] args) {
