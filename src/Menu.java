@@ -121,7 +121,7 @@ public class Menu extends JFrame {
     private void atualizarListaLivros() {
         StringBuilder listaLivros = new StringBuilder();
         for (Livro livro : biblioteca.getLivros()) {
-            listaLivros.append(livro).append("\n");
+            listaLivros.append(livro).append("\n--------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
         }
         bookListArea.setText(listaLivros.toString());
     }
