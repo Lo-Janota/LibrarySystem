@@ -52,6 +52,10 @@ public class LoginScreen extends JFrame {
         fieldsPanel.add(passwordLabel);
         fieldsPanel.add(passwordField);
 
+        // Adiciona tooltips (legandas) aos botões
+        usernameField.setToolTipText("Informe seu usuário");
+        passwordField.setToolTipText("Informe sua senha");
+
         // Adiciona um espaço flexível entre os campos de senha e o botão de login
         fieldsPanel.add(Box.createVerticalGlue());
 
