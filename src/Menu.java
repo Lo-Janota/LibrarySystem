@@ -76,28 +76,43 @@ public class Menu extends JFrame {
         });
 
         // Adiciona um ActionListener ao botão de pesquisa
-        searchButton.addActionListener(new ActionListener() { // Adiciona um ActionListener ao botão de pesquisa
+        searchButton.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) { // Sobrescreve o método actionPerformed
-                String termoPesquisa = searchField.getText().toLowerCase(); // Obtém o termo de pesquisa do campo de texto e converte para minúsculas
-                StringBuilder resultado = new StringBuilder(); // Cria um StringBuilder para armazenar o resultado da busca
-                boolean livroEncontrado = false; // Variável para verificar se pelo menos um livro foi encontrado
-                for (Livro livro : biblioteca.getLivros()) {
-                    if (livro.getTitulo().toLowerCase().equals(termoPesquisa) || // Verifica se o título, autor, categoria ou ISBN do livro é exatamente igual (ignorando maiúsculas e minúsculas) ao termo de pesquisa
-                            livro.getAutor().toLowerCase().equals(termoPesquisa) ||
-                            livro.getCategoria().toLowerCase().equals(termoPesquisa) ||
-                            livro.getIsbn().toString().equals(termoPesquisa)) {
-                        resultado.append(livro).append("\n"); // Adiciona o livro ao resultado se for encontrado
-                        livroEncontrado = true; // Define que pelo menos um livro foi encontrado
+            public void actionPerformed(ActionEvent e) {
+                String termoPesquisa = searchField.getText().toLowerCase();
+                StringBuilder resultado = new StringBuilder();
+                boolean livroEncontrado = false;
+
+                if (termoPesquisa.isEmpty()) {
+                    // Campo de pesquisa vazio, exibe todos os livros se houver algum na lista
+                    if (biblioteca.getLivros().isEmpty()) {
+                        JOptionPane.showMessageDialog(null, "Não há livros na biblioteca.", "Nenhum resultado", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        for (Livro livro : biblioteca.getLivros()) {
+                            resultado.append(livro).append("\n");
+                        }
+                        bookListArea.setText(resultado.toString());
                     }
-                }
-                if (!livroEncontrado) { // Se nenhum livro foi encontrado
-                    JOptionPane.showMessageDialog(null, "Nenhum livro foi encontrado.", "Nenhum resultado", JOptionPane.INFORMATION_MESSAGE); // Exibe um JOptionPane com a mensagem
                 } else {
-                    bookListArea.setText(resultado.toString()); // Atualiza o texto da área de texto com o resultado da busca
+                    // Campo de pesquisa não vazio, realiza a busca normalmente
+                    for (Livro livro : biblioteca.getLivros()) {
+                        if (livro.getTitulo().toLowerCase().equals(termoPesquisa) ||
+                                livro.getAutor().toLowerCase().equals(termoPesquisa) ||
+                                livro.getCategoria().toLowerCase().equals(termoPesquisa) ||
+                                livro.getIsbn().toString().equals(termoPesquisa)) {
+                            resultado.append(livro).append("\n");
+                            livroEncontrado = true;
+                        }
+                    }
+                    if (!livroEncontrado) {
+                        JOptionPane.showMessageDialog(null, "Nenhum livro foi encontrado.", "Nenhum resultado", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        bookListArea.setText(resultado.toString());
+                    }
                 }
             }
         });
+
 
         // Adiciona um ActionListener ao botão de adicionar livro
         addButton.addActionListener(new ActionListener() {
