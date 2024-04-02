@@ -102,6 +102,6 @@ class Livro {
                 " | Categoria = '" + categoria + '\'' +
                 " | ISBN = '" + isbn + '\'' +
                 " | Disponível = " + (disponivel ? "Sim" : "Não") +
-                " | Prazo de Entrega = " + (prazoEntrega != null ? prazoEntrega + " dias" : "Indefinido"); // Retorna uma representação em string do livro
+                " | Prazo de Empréstimo = " + (prazoEntrega != null ? prazoEntrega + " dias" : "Indefinido"); // Retorna uma representação em string do livro
     }
 }

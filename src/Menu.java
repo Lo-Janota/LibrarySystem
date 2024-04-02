@@ -29,9 +29,9 @@ public class Menu extends JFrame {
         deleteButton = new JButton("❌"); // Cria um botão de excluir livro com ícone
         configButton = new JButton("🔧"); // Cria um botão de configuração com ícone
         editButton = new JButton("❓"); // Cria um botão de editar com icone
+        prazoButton = new JButton("⏳"); // Cria um botão com o ícone de prazo de entrega
         bookListArea = new JTextArea(); // Cria uma área de texto para listar os livros
         bookListArea.setEditable(false); // Define a área de texto como somente leitura
-        prazoButton = new JButton("⏳"); // Cria um botão com o ícone de prazo de entrega
 
         JPanel topPanel = new JPanel(new BorderLayout()); // Cria um painel superior com layout BorderLayout
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.CENTER)); // Painel para centralizar a barra de pesquisa
@@ -291,7 +291,7 @@ public class Menu extends JFrame {
     private void atualizarListaLivros() {
         StringBuilder listaLivros = new StringBuilder();
         for (Livro livro : biblioteca.getLivros()) {
-            listaLivros.append(livro).append("\n--------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+            listaLivros.append(livro).append("\n---------------------------------------------------------------------------------------------\n");
         }
         bookListArea.setText(listaLivros.toString());
     }
