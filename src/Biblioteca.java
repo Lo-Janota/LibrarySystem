@@ -35,12 +35,16 @@ class Livro {
     private String autor; // Autor do livro
     private String categoria; // Categoria do livro
     private Integer isbn; // ISBN do livro
+    private boolean disponivel; // Indica se o livro está disponível
+    private Integer prazoEntrega; // Prazo de entrega do livro em dias
 
     public Livro(String titulo, String autor, String categoria, Integer isbn) {
         this.titulo = titulo;
         this.autor = autor;
         this.categoria = categoria;
         this.isbn = isbn;
+        this.disponivel = false; // Por padrão, o livro é inicializado como disponível
+        this.prazoEntrega = null; // Por padrão, o prazo de entrega não está definido
     }
 
     public String getTitulo() {
@@ -75,11 +79,29 @@ class Livro {
         this.isbn = isbn; // Define o ISBN do livro
     }
 
+    public boolean isDisponivel() {
+        return disponivel; // Retorna se o livro está disponível
+    }
+
+    public void setDisponivel(boolean disponivel) {
+        this.disponivel = disponivel; // Define se o livro está disponível
+    }
+
+    public Integer getPrazoEntrega() {
+        return prazoEntrega; // Retorna o prazo de entrega do livro
+    }
+
+    public void setPrazoEntrega(Integer prazoEntrega) {
+        this.prazoEntrega = prazoEntrega; // Define o prazo de entrega do livro
+    }
+
     @Override
     public String toString() {
         return  "Titulo = '" + titulo + '\'' +
                 " | Autor = '" + autor + '\'' +
                 " | Categoria = '" + categoria + '\'' +
-                " | ISBN = '" + isbn + '\''; // Retorna uma representação em string do livro
+                " | ISBN = '" + isbn + '\'' +
+                " | Disponível = " + (disponivel ? "Sim" : "Não") +
+                " | Prazo de Entrega = " + (prazoEntrega != null ? prazoEntrega + " dias" : "Indefinido"); // Retorna uma representação em string do livro
     }
 }
