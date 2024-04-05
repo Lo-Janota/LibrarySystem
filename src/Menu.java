@@ -35,7 +35,7 @@ public class Menu extends JFrame {
 
         JPanel topPanel = new JPanel(new BorderLayout()); // Cria um painel superior com layout BorderLayout
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.CENTER)); // Painel para centralizar a barra de pesquisa
-        JPanel emptyPanel = new JPanel(); // Painel vazio para alinhar a barra de pesquisa à esquerda
+        //JPanel emptyPanel = new JPanel(); // Painel vazio para alinhar a barra de pesquisa à esquerda
 
         searchPanel.add(searchField); // Adiciona o campo de pesquisa ao painel
         searchPanel.add(searchButton); // Adiciona o botão de pesquisa ao painel
@@ -287,14 +287,26 @@ public class Menu extends JFrame {
         atualizarListaLivros(); // Atualiza a lista de livros ao iniciar a aplicação
     }
 
-    // Atualiza a lista de livros na área de texto
+    // Declaração das constantes para os emojis de marcação verde e vermelha
+    private static final String EMOJI_VERDE = "✔";
+    private static final String EMOJI_VERMELHO = "❌";
+    // Método para atualizar a lista de livros na área de texto
     private void atualizarListaLivros() {
+    // Criação de um StringBuilder para construir a lista de livros de forma eficiente
         StringBuilder listaLivros = new StringBuilder();
+        // Iteração sobre cada livro na lista de livros da biblioteca
         for (Livro livro : biblioteca.getLivros()) {
-            listaLivros.append(livro).append("\n---------------------------------------------------------------------------------------------\n");
+            // Verificação da disponibilidade do livro e atribuição do emoji correspondente
+            String disponibilidadeEmoji = livro.isDisponivel() ? EMOJI_VERDE : EMOJI_VERMELHO;
+            // Adição das informações do livro à lista, seguido de um espaço em branco
+            listaLivros.append(livro).append(" "); 
+            // Adição do emoji de disponibilidade à lista, seguido de uma quebra de linha e uma linha horizontal
+            listaLivros.append(" | " + disponibilidadeEmoji).append("\n--------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
         }
+        // Definição do texto da área de texto com a lista de livros construída
         bookListArea.setText(listaLivros.toString());
     }
+    
 
     // Método principal para executar a aplicação Swing
     public static void main(String[] args) {
