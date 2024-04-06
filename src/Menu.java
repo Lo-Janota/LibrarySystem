@@ -288,7 +288,7 @@ public class Menu extends JFrame {
     }
 
     // Declaração das constantes para os emojis de marcação verde e vermelha
-    private static final String EMOJI_VERDE = "✔";
+    private static final String EMOJI_VERDE = "✅";
     private static final String EMOJI_VERMELHO = "❌";
     // Método para atualizar a lista de livros na área de texto
     private void atualizarListaLivros() {
