@@ -23,6 +23,7 @@ Requisitos Não-Funcionais
 Este projeto foi desenvolvido como parte da disciplina de Engenharia de Software da UNAERP, com o intuito de oferecer uma solução moderna e eficiente para a Biblioteca da Universidade.
 
 Envolvidos no projeto
+
     838633 - Lorenzo de Andrade Souza Janota
     838858 - Gabriel Luís dos Santos Justino
     838500 - Enzo Botoloto Flor
