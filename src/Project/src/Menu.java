@@ -301,7 +301,7 @@ public class Menu extends JFrame {
             // Adição das informações do livro à lista, seguido de um espaço em branco
             listaLivros.append(livro).append(" "); 
             // Adição do emoji de disponibilidade à lista, seguido de uma quebra de linha e uma linha horizontal
-            listaLivros.append(" | " + disponibilidadeEmoji).append("\n--------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+            listaLivros.append(" | " + disponibilidadeEmoji).append("\n---------------------------------------------------------------------------------------------\n");
         }
         // Definição do texto da área de texto com a lista de livros construída
         bookListArea.setText(listaLivros.toString());
