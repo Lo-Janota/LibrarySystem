@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/src/LibrarySystem.iml" filepath="$PROJECT_DIR$/src/LibrarySystem.iml" />
-      <module fileurl="file://$PROJECT_DIR$/src/untitled/untitled.iml" filepath="$PROJECT_DIR$/src/untitled/untitled.iml" />
+      <module fileurl="file://$PROJECT_DIR$/LibrarySystem.iml" filepath="$PROJECT_DIR$/LibrarySystem.iml" />
     </modules>
   </component>
 </project>
