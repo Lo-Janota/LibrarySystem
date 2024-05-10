@@ -1,107 +1,152 @@
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Biblioteca {
-    private List<Livro> livros; // Lista de livros da biblioteca
+class Biblioteca {
+    private Connection connection;
 
     public Biblioteca() {
-        livros = new ArrayList<>(); // Inicializa a lista de livros como uma ArrayList vazia
+        try {
+            connection = DriverManager.getConnection("jdbc:sqlite:base.db");
+            Statement statement = connection.createStatement();
+            statement.setQueryTimeout(30);
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS livros (id INTEGER PRIMARY KEY AUTOINCREMENT, titulo TEXT, autor TEXT, categoria TEXT, isbn INTEGER)");
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    public List<Livro> pesquisarLivro(String termoPesquisa) {
+        List<Livro> livros = new ArrayList<>();
+        try {
+            String query = "SELECT * FROM livros WHERE titulo LIKE ? OR autor LIKE ? OR categoria LIKE ? OR isbn LIKE ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, "%" + termoPesquisa + "%");
+            preparedStatement.setString(2, "%" + termoPesquisa + "%");
+            preparedStatement.setString(3, "%" + termoPesquisa + "%");
+            preparedStatement.setString(4, "%" + termoPesquisa + "%");
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                String titulo = resultSet.getString("titulo");
+                String autor = resultSet.getString("autor");
+                String categoria = resultSet.getString("categoria");
+                int isbn = resultSet.getInt("isbn");
+                livros.add(new Livro(titulo, autor, categoria, isbn));
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+        return livros;
     }
 
     public void adicionarLivro(Livro livro) {
-        livros.add(livro); // Adiciona um livro à lista de livros
+        try {
+            String query = "INSERT INTO livros (titulo, autor, categoria, isbn) VALUES (?, ?, ?, ?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, livro.getTitulo());
+            preparedStatement.setString(2, livro.getAutor());
+            preparedStatement.setString(3, livro.getCategoria());
+            preparedStatement.setInt(4, livro.getIsbn());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
     }
 
     public void removerLivro(Livro livro) {
-        livros.remove(livro); // Remove um livro da lista de livros
-    }
-
-    public Livro buscarLivroPorTitulo(String titulo) {
-        for (Livro livro : livros) { // Itera sobre todos os livros da lista
-            if (livro.getTitulo().equals(titulo)) { // Verifica se o título do livro atual é igual ao título procurado
-                return livro; // Retorna o livro se encontrado
-            }
+        try {
+            String query = "DELETE FROM livros WHERE isbn = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1, livro.getIsbn());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
         }
-        return null; // Retorna null se o livro não for encontrado
     }
 
     public List<Livro> getLivros() {
-        return livros; // Retorna a lista de livros
+        List<Livro> livros = new ArrayList<>();
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM livros");
+            while (resultSet.next()) {
+                String titulo = resultSet.getString("titulo");
+                String autor = resultSet.getString("autor");
+                String categoria = resultSet.getString("categoria");
+                int isbn = resultSet.getInt("isbn");
+                livros.add(new Livro(titulo, autor, categoria, isbn));
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+        return livros;
     }
 }
 
 class Livro {
-    private String titulo; // Título do livro
-    private String autor; // Autor do livro
-    private String categoria; // Categoria do livro
-    private Integer isbn; // ISBN do livro
-    private boolean disponivel; // Indica se o livro está disponível
-    private Integer prazoEntrega; // Prazo de entrega do livro em dias
+    private String titulo;
+    private String autor;
+    private String categoria;
+    private int isbn;
+    private int prazoEntrega; // prazo de entrega opcional
 
-    public Livro(String titulo, String autor, String categoria, Integer isbn) {
+    public Livro(String titulo, String autor, String categoria, int isbn) {
         this.titulo = titulo;
         this.autor = autor;
         this.categoria = categoria;
         this.isbn = isbn;
-        this.disponivel = false; // Por padrão, o livro é inicializado como disponível
-        this.prazoEntrega = null; // Por padrão, o prazo de entrega não está definido
+    }
+
+    public Livro(String titulo, String autor, String categoria, int isbn, int prazoEntrega) {
+        this.titulo = titulo;
+        this.autor = autor;
+        this.categoria = categoria;
+        this.isbn = isbn;
+        this.prazoEntrega = prazoEntrega;
+    }
+
+    public int getPrazoEntrega() {
+        return prazoEntrega;
+    }
+
+    public void setPrazoEntrega(int prazoEntrega) {
+        this.prazoEntrega = prazoEntrega;
     }
 
     public String getTitulo() {
-        return titulo; // Retorna o título do livro
+        return titulo;
     }
 
     public void setTitulo(String titulo) {
-        this.titulo = titulo; // Define o título do livro
+        this.titulo = titulo;
     }
 
     public String getAutor() {
-        return autor; // Retorna o autor do livro
+        return autor;
     }
 
     public void setAutor(String autor) {
-        this.autor = autor; // Define o autor do livro
+        this.autor = autor;
     }
 
     public String getCategoria() {
-        return categoria; // Retorna a categoria do livro
+        return categoria;
     }
 
     public void setCategoria(String categoria) {
-        this.categoria = categoria; // Define a categoria do livro
+        this.categoria = categoria;
     }
 
-    public Integer getIsbn() {
-        return isbn; // Retorna o ISBN do livro
+    public int getIsbn() {
+        return isbn;
     }
 
-    public void setIsbn(Integer isbn) {
-        this.isbn = isbn; // Define o ISBN do livro
-    }
-
-    public boolean isDisponivel() {
-        return disponivel; // Retorna se o livro está disponível
-    }
-
-    public void setDisponivel(boolean disponivel) {
-        this.disponivel = disponivel; // Define se o livro está disponível
-    }
-
-    public Integer getPrazoEntrega() {
-        return prazoEntrega; // Retorna o prazo de entrega do livro
-    }
-
-    public void setPrazoEntrega(Integer prazoEntrega) {
-        this.prazoEntrega = prazoEntrega; // Define o prazo de entrega do livro
+    public void setIsbn(int isbn) {
+        this.isbn = isbn;
     }
 
     @Override
     public String toString() {
-        return  "Titulo = '" + titulo + '\'' +
-                " | Autor = '" + autor + '\'' +
-                " | Categoria = '" + categoria + '\'' +
-                " | ISBN = '" + isbn + '\'' +
-                " | Disponível = " + (disponivel ? "Sim" : "Não") +
-                " | Prazo de Empréstimo = " + (prazoEntrega != null ? prazoEntrega + " dias" : "Indefinido"); // Retorna uma representação em string do livro
+        return "Título: " + titulo + ", Autor: " + autor + ", Categoria: " + categoria + ", ISBN: " + isbn + ", Prazo de Entrega: " + prazoEntrega;
     }
 }
