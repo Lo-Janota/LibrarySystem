@@ -10,9 +10,9 @@ public class DataBase {
 
         try {
             // Cria a conexão com o banco de dados
-            connection = DriverManager.getConnection("jdbc:sqlite:base.db");
+            connection = DriverManager.getConnection("jdbc:sqlite:dataBase.db");
             Statement statement = connection.createStatement();
-            statement.setQueryTimeout(30);  // Espera só por 5 segundos para conectar
+            statement.setQueryTimeout(30);  // Espera só por 30 segundos para conectar
         } catch(SQLException e) {
             // Se a mensagem de erro for: "out of memory",
             // Provavelmente erro ao criar(permissão) ou caminho do banco de dados

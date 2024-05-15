@@ -170,7 +170,6 @@ public class Menu extends JFrame {
                 }
             }
         });
-
         atualizarListaLivros();
     }
 
