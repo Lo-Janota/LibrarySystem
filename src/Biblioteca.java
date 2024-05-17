@@ -14,9 +14,11 @@ class Biblioteca {
             connection = DriverManager.getConnection("jdbc:sqlite:dataBase.db");
             Statement statement = connection.createStatement();
             statement.setQueryTimeout(30);
+            //statement.executeUpdate("DROP TABLE IF EXISTS livros"); -> DROPAR A TABELA (REALIZAÇÃO DE TESTES)
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS livros (id INTEGER PRIMARY KEY AUTOINCREMENT, titulo TEXT, autor TEXT, categoria TEXT, isbn INTEGER, prazoEntrega INTEGER)");
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            System.err.println("Erro ao criar a tabela: " + e.getMessage());
+            logger.error("Erro ao criar a tabela: " + e.getMessage());
         }
     }
 
@@ -54,8 +56,11 @@ class Biblioteca {
             preparedStatement.setInt(4, livro.getIsbn());
             preparedStatement.setInt(5, livro.getPrazoEntrega());
             preparedStatement.executeUpdate();
+            preparedStatement.close();
+            logger.info("Livro adicionado com sucesso: " + livro.getTitulo());
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            System.err.println("Erro ao adicionar livro: " + e.getMessage());
+            logger.error("Erro ao adicionar livro: " + e.getMessage());
         }
     }
 
@@ -68,6 +73,43 @@ class Biblioteca {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             System.err.println(e.getMessage());
+        }
+    }
+
+    public void editarLivro(Livro livro) {
+        if (livro == null) {
+            System.err.println("Livro é nulo.");
+            return;
+        }
+
+        if (connection == null) {
+            System.err.println("Conexão com o banco de dados é nula.");
+            return;
+        }
+
+        System.out.println("ID do livro a ser atualizado: " + livro.getId());
+        try {
+            String query = "UPDATE livros SET titulo = ?, autor = ?, categoria = ?, isbn = ?, prazoEntrega = ? WHERE id = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, livro.getTitulo());
+            preparedStatement.setString(2, livro.getAutor());
+            preparedStatement.setString(3, livro.getCategoria());
+            preparedStatement.setInt(4, livro.getIsbn());
+            preparedStatement.setInt(5, livro.getPrazoEntrega());
+            preparedStatement.setInt(6, livro.getId());
+
+            int rowsUpdated = preparedStatement.executeUpdate();
+            if (rowsUpdated > 0) {
+                System.out.println("Livro atualizado com sucesso: " + livro.getTitulo());
+                logger.info("Livro atualizado com sucesso: " + livro.getTitulo());
+            } else {
+                System.err.println("Nenhuma linha foi atualizada. Verifique se o ID do livro está correto.");
+                logger.warn("Nenhuma linha foi atualizada. Verifique se o ID do livro está correto.");
+            }
+            preparedStatement.close();
+        } catch (SQLException e) {
+            System.err.println("Erro ao atualizar o livro: " + e.getMessage());
+            logger.error("Erro ao atualizar o livro: " + e.getMessage());
         }
     }
 

@@ -155,6 +155,9 @@ public class Menu extends JFrame {
                         livro.setAutor(novoAutor);
                         livro.setCategoria(novaCategoria);
                         livro.setIsbn(novoIsbn);
+
+                        biblioteca.editarLivro(livro);
+
                         atualizarListaLivros();
                         JOptionPane.showMessageDialog(null, "Livro editado com sucesso!");
                     } catch (NumberFormatException ex) {
@@ -170,8 +173,12 @@ public class Menu extends JFrame {
             String termoPesquisa = searchField.getText().toLowerCase();
             Livro livro = biblioteca.pesquisarLivro(termoPesquisa).stream().findFirst().orElse(null);
             if (livro != null) {
-                biblioteca.removerLivro(livro);
-                atualizarListaLivros();
+                int confirmacao = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover o livro '" + livro.getTitulo() + "'?", "Confirmar Remoção", JOptionPane.YES_NO_OPTION);
+                if (confirmacao == JOptionPane.YES_OPTION) {
+                    biblioteca.removerLivro(livro);
+                    atualizarListaLivros();
+                    JOptionPane.showMessageDialog(null, "Livro removido com sucesso!");
+                }
             } else {
                 JOptionPane.showMessageDialog(null, "Livro não encontrado.");
             }
