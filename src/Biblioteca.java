@@ -14,10 +14,9 @@ class Biblioteca {
             connection = DriverManager.getConnection("jdbc:sqlite:dataBase.db");
             Statement statement = connection.createStatement();
             statement.setQueryTimeout(30);
-            statement.executeUpdate("CREATE TABLE IF NOT EXISTS livros (id INTEGER PRIMARY KEY AUTOINCREMENT, titulo TEXT, autor TEXT, categoria TEXT, isbn INTEGER)");
-            logger.info("Tabela 'livros' criada ou já existente.");
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS livros (id INTEGER PRIMARY KEY AUTOINCREMENT, titulo TEXT, autor TEXT, categoria TEXT, isbn INTEGER, prazoEntrega INTEGER)");
         } catch (SQLException e) {
-            logger.error("Erro ao conectar ao banco de dados ou criar a tabela.", e);
+            System.err.println(e.getMessage());
         }
     }
 
@@ -36,75 +35,70 @@ class Biblioteca {
                 String autor = resultSet.getString("autor");
                 String categoria = resultSet.getString("categoria");
                 int isbn = resultSet.getInt("isbn");
-                livros.add(new Livro(titulo, autor, categoria, isbn));
+                int prazoEntrega = resultSet.getInt("prazoEntrega");
+                livros.add(new Livro(titulo, autor, categoria, isbn, prazoEntrega));
             }
-            logger.info("Pesquisa de livros com o termo '{}'. {} livros encontrados.", termoPesquisa, livros.size());
         } catch (SQLException e) {
-            logger.error("Erro ao pesquisar livros.", e);
+            System.err.println(e.getMessage());
         }
         return livros;
     }
 
     public void adicionarLivro(Livro livro) {
         try {
-            String query = "INSERT INTO livros (titulo, autor, categoria, isbn) VALUES (?, ?, ?, ?)";
+            String query = "INSERT INTO livros (titulo, autor, categoria, isbn, prazoEntrega) VALUES (?, ?, ?, ?, ?)";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, livro.getTitulo());
             preparedStatement.setString(2, livro.getAutor());
             preparedStatement.setString(3, livro.getCategoria());
             preparedStatement.setInt(4, livro.getIsbn());
+            preparedStatement.setInt(5, livro.getPrazoEntrega());
             preparedStatement.executeUpdate();
-            logger.info("Livro adicionado: {}", livro);
         } catch (SQLException e) {
-            logger.error("Erro ao adicionar livro.", e);
+            System.err.println(e.getMessage());
         }
     }
 
     public void removerLivro(Livro livro) {
         try {
-            String query = "DELETE FROM livros WHERE isbn = ?";
+            String query = "DELETE FROM livros WHERE id = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setInt(1, livro.getIsbn());
+            preparedStatement.setInt(1, livro.getId());
+            System.out.println("Removendo livro com ID: " + livro.getId());
             preparedStatement.executeUpdate();
-            logger.info("Livro removido: {}", livro);
         } catch (SQLException e) {
-            logger.error("Erro ao remover livro.", e);
+            System.err.println(e.getMessage());
         }
     }
 
     public List<Livro> getLivros() {
         List<Livro> livros = new ArrayList<>();
         try {
+            String query = "SELECT * FROM livros";
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM livros");
+            ResultSet resultSet = statement.executeQuery(query);
             while (resultSet.next()) {
                 String titulo = resultSet.getString("titulo");
                 String autor = resultSet.getString("autor");
                 String categoria = resultSet.getString("categoria");
                 int isbn = resultSet.getInt("isbn");
-                livros.add(new Livro(titulo, autor, categoria, isbn));
+                int prazoEntrega = resultSet.getInt("prazoEntrega");
+                livros.add(new Livro(titulo, autor, categoria, isbn, prazoEntrega));
             }
-            logger.info("Obtidos todos os livros. Total de livros: {}", livros.size());
         } catch (SQLException e) {
-            logger.error("Erro ao obter todos os livros.", e);
+            System.err.println(e.getMessage());
         }
         return livros;
     }
 }
 
 class Livro {
+    private int id;
     private String titulo;
     private String autor;
     private String categoria;
     private int isbn;
-    private int prazoEntrega; // prazo de entrega opcional
-
-    public Livro(String titulo, String autor, String categoria, int isbn) {
-        this.titulo = titulo;
-        this.autor = autor;
-        this.categoria = categoria;
-        this.isbn = isbn;
-    }
+    private int prazoEntrega;
 
     public Livro(String titulo, String autor, String categoria, int isbn, int prazoEntrega) {
         this.titulo = titulo;
@@ -114,12 +108,8 @@ class Livro {
         this.prazoEntrega = prazoEntrega;
     }
 
-    public int getPrazoEntrega() {
-        return prazoEntrega;
-    }
-
-    public void setPrazoEntrega(int prazoEntrega) {
-        this.prazoEntrega = prazoEntrega;
+    public int getId() {
+        return id;
     }
 
     public String getTitulo() {
@@ -154,8 +144,23 @@ class Livro {
         this.isbn = isbn;
     }
 
+    public int getPrazoEntrega() {
+        return prazoEntrega;
+    }
+
+    public void setPrazoEntrega(int prazoEntrega) {
+        this.prazoEntrega = prazoEntrega;
+    }
+
     @Override
     public String toString() {
-        return "Título: " + titulo + ", Autor: " + autor + ", Categoria: " + categoria + ", ISBN: " + isbn + ", Prazo de Entrega: " + prazoEntrega;
+        return "Livro: " +
+                "Id = " + id +
+                " | Título = '" + titulo + '\'' +
+                " | Autor = '" + autor + '\'' +
+                " | Categoria = '" + categoria + '\'' +
+                " | ISBN = " + isbn +
+                " | Prazo de Entrega = " + prazoEntrega +
+                " dias";
     }
 }

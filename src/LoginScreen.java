@@ -68,8 +68,8 @@ public class LoginScreen extends JFrame {
         // Adiciona o JPanel do botão de login ao final da tela
         add(buttonPanel, BorderLayout.SOUTH);
 
-         // Adiciona um KeyListener ao campo de senha para verificar se a tecla Enter foi pressionada
-         passwordField.addKeyListener(new KeyAdapter() {
+        // Adiciona um KeyListener ao campo de senha para verificar se a tecla Enter foi pressionada
+        passwordField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {

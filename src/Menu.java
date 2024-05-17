@@ -69,39 +69,52 @@ public class Menu extends JFrame {
         add(topPanel, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
 
-        configButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(null, "Configuração de usuários aqui...");
-            }
+        configButton.addActionListener(e -> {
+            JOptionPane.showMessageDialog(null, "Configuração de usuários aqui...");
         });
 
-        searchButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String termoPesquisa = searchField.getText().toLowerCase();
-                List<Livro> resultado = biblioteca.pesquisarLivro(termoPesquisa);
-                StringBuilder sb = new StringBuilder();
-                for (Livro livro : resultado) {
-                    sb.append(livro).append("\n");
-                }
-                bookListArea.setText(sb.toString());
+        searchButton.addActionListener(e -> {
+            String termoPesquisa = searchField.getText().toLowerCase();
+            List<Livro> resultado = biblioteca.pesquisarLivro(termoPesquisa);
+            StringBuilder sb = new StringBuilder();
+            for (Livro livro : resultado) {
+                sb.append(livro).append("\n");
             }
+            bookListArea.setText(sb.toString());
         });
 
-        addButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String titulo = JOptionPane.showInputDialog("Digite o título do livro:");
-                String autor = JOptionPane.showInputDialog("Digite o autor do livro:");
-                String categoria = JOptionPane.showInputDialog("Digite a categoria do livro:");
-                String isbnStr = JOptionPane.showInputDialog("Digite o número ISBN do livro:");
-                String prazoEntregaStr = JOptionPane.showInputDialog("Digite o prazo de entrega do livro:");
+        addButton.addActionListener(e -> {
+            JTextField tituloField = new JTextField(10);
+            JTextField autorField = new JTextField(10);
+            JTextField categoriaField = new JTextField(10);
+            JTextField isbnField = new JTextField(10);
+            JTextField prazoEntregaField = new JTextField(10);
+
+            JPanel panel = new JPanel(new GridLayout(5, 2));
+            panel.add(new JLabel("Título:"));
+            panel.add(tituloField);
+            panel.add(new JLabel("Autor:"));
+            panel.add(autorField);
+            panel.add(new JLabel("Categoria:"));
+            panel.add(categoriaField);
+            panel.add(new JLabel("ISBN:"));
+            panel.add(isbnField);
+            panel.add(new JLabel("Prazo de Entrega:"));
+            panel.add(prazoEntregaField);
+
+            int result = JOptionPane.showConfirmDialog(null, panel, "Adicionar Livro", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+            if (result == JOptionPane.OK_OPTION) {
+                String titulo = tituloField.getText();
+                String autor = autorField.getText();
+                String categoria = categoriaField.getText();
+                String isbnStr = isbnField.getText();
+                String prazoEntregaStr = prazoEntregaField.getText();
 
                 try {
                     Integer isbn = Integer.parseInt(isbnStr);
-                    Integer prazoEntrega = Integer.parseInt(prazoEntregaStr); // Converte o prazo de entrega para Integer
-                    biblioteca.adicionarLivro(new Livro(titulo, autor, categoria, isbn, prazoEntrega)); // Passa o prazo de entrega para o construtor do Livro
+                    Integer prazoEntrega = Integer.parseInt(prazoEntregaStr);
+                    biblioteca.adicionarLivro(new Livro(titulo, autor, categoria, isbn, prazoEntrega));
                     atualizarListaLivros();
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(null, "O ISBN e o prazo de entrega devem ser números inteiros.");
@@ -109,30 +122,32 @@ public class Menu extends JFrame {
             }
         });
 
-        deleteButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String termoPesquisa = searchField.getText().toLowerCase();
-                Livro livro = biblioteca.pesquisarLivro(termoPesquisa).stream().findFirst().orElse(null);
-                if (livro != null) {
-                    biblioteca.removerLivro(livro);
-                    atualizarListaLivros();
-                } else {
-                    JOptionPane.showMessageDialog(null, "Livro não encontrado.");
-                }
-            }
-        });
+        editButton.addActionListener(e -> {
+            String termoPesquisa = searchField.getText().toLowerCase();
+            Livro livro = biblioteca.pesquisarLivro(termoPesquisa).stream().findFirst().orElse(null);
+            if (livro != null) {
+                JTextField tituloField = new JTextField(livro.getTitulo(), 10);
+                JTextField autorField = new JTextField(livro.getAutor(), 10);
+                JTextField categoriaField = new JTextField(livro.getCategoria(), 10);
+                JTextField isbnField = new JTextField(String.valueOf(livro.getIsbn()), 10);
 
-        editButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String termoPesquisa = searchField.getText().toLowerCase();
-                Livro livro = biblioteca.pesquisarLivro(termoPesquisa).stream().findFirst().orElse(null);
-                if (livro != null) {
-                    String novoTitulo = JOptionPane.showInputDialog("Editar Título:", livro.getTitulo());
-                    String novoAutor = JOptionPane.showInputDialog("Editar Autor:", livro.getAutor());
-                    String novaCategoria = JOptionPane.showInputDialog("Editar Categoria:", livro.getCategoria());
-                    String novoIsbnStr = JOptionPane.showInputDialog("Editar ISBN:", livro.getIsbn());
+                JPanel panel = new JPanel(new GridLayout(4, 2));
+                panel.add(new JLabel("Título:"));
+                panel.add(tituloField);
+                panel.add(new JLabel("Autor:"));
+                panel.add(autorField);
+                panel.add(new JLabel("Categoria:"));
+                panel.add(categoriaField);
+                panel.add(new JLabel("ISBN:"));
+                panel.add(isbnField);
+
+                int result = JOptionPane.showConfirmDialog(null, panel, "Editar Livro", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+                if (result == JOptionPane.OK_OPTION) {
+                    String novoTitulo = tituloField.getText();
+                    String novoAutor = autorField.getText();
+                    String novaCategoria = categoriaField.getText();
+                    String novoIsbnStr = isbnField.getText();
 
                     try {
                         Integer novoIsbn = Integer.parseInt(novoIsbnStr);
@@ -145,29 +160,37 @@ public class Menu extends JFrame {
                     } catch (NumberFormatException ex) {
                         JOptionPane.showMessageDialog(null, "O ISBN deve ser um número inteiro.");
                     }
-                } else {
-                    JOptionPane.showMessageDialog(null, "Livro não encontrado.");
                 }
+            } else {
+                JOptionPane.showMessageDialog(null, "Livro não encontrado.");
             }
         });
 
-        prazoButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String termoPesquisa = searchField.getText().toLowerCase();
-                Livro livro = biblioteca.pesquisarLivro(termoPesquisa).stream().findFirst().orElse(null);
-                if (livro != null) {
-                    String prazoStr = JOptionPane.showInputDialog("Informe o prazo de empréstimos em dias:");
-                    try {
-                        Integer prazo = Integer.parseInt(prazoStr);
-                        livro.setPrazoEntrega(prazo);
-                        atualizarListaLivros();
-                    } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(null, "O prazo de empréstimo deve ser um número inteiro.");
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(null, "Livro não encontrado.");
+        deleteButton.addActionListener(e -> {
+            String termoPesquisa = searchField.getText().toLowerCase();
+            Livro livro = biblioteca.pesquisarLivro(termoPesquisa).stream().findFirst().orElse(null);
+            if (livro != null) {
+                biblioteca.removerLivro(livro);
+                atualizarListaLivros();
+            } else {
+                JOptionPane.showMessageDialog(null, "Livro não encontrado.");
+            }
+        });
+
+        prazoButton.addActionListener(e -> {
+            String termoPesquisa = searchField.getText().toLowerCase();
+            Livro livro = biblioteca.pesquisarLivro(termoPesquisa).stream().findFirst().orElse(null);
+            if (livro != null) {
+                String prazoStr = JOptionPane.showInputDialog("Informe o prazo de empréstimos em dias:");
+                try {
+                    Integer prazo = Integer.parseInt(prazoStr);
+                    livro.setPrazoEntrega(prazo);
+                    atualizarListaLivros();
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "O prazo de empréstimo deve ser um número inteiro.");
                 }
+            } else {
+                JOptionPane.showMessageDialog(null, "Livro não encontrado.");
             }
         });
         atualizarListaLivros();
