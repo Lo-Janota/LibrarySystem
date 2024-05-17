@@ -1,18 +1,23 @@
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class Biblioteca {
+    //Adicionando LOG para salvar qualquer alteração no banco de dados.
+    private static final Logger logger = LoggerFactory.getLogger(Biblioteca.class);
     private Connection connection;
 
     public Biblioteca() {
         try {
-            connection = DriverManager.getConnection("jdbc:sqlite:base.db");
+            connection = DriverManager.getConnection("jdbc:sqlite:dataBase.db");
             Statement statement = connection.createStatement();
             statement.setQueryTimeout(30);
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS livros (id INTEGER PRIMARY KEY AUTOINCREMENT, titulo TEXT, autor TEXT, categoria TEXT, isbn INTEGER)");
+            logger.info("Tabela 'livros' criada ou já existente.");
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            logger.error("Erro ao conectar ao banco de dados ou criar a tabela.", e);
         }
     }
 
@@ -33,8 +38,9 @@ class Biblioteca {
                 int isbn = resultSet.getInt("isbn");
                 livros.add(new Livro(titulo, autor, categoria, isbn));
             }
+            logger.info("Pesquisa de livros com o termo '{}'. {} livros encontrados.", termoPesquisa, livros.size());
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            logger.error("Erro ao pesquisar livros.", e);
         }
         return livros;
     }
@@ -48,8 +54,9 @@ class Biblioteca {
             preparedStatement.setString(3, livro.getCategoria());
             preparedStatement.setInt(4, livro.getIsbn());
             preparedStatement.executeUpdate();
+            logger.info("Livro adicionado: {}", livro);
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            logger.error("Erro ao adicionar livro.", e);
         }
     }
 
@@ -59,8 +66,9 @@ class Biblioteca {
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setInt(1, livro.getIsbn());
             preparedStatement.executeUpdate();
+            logger.info("Livro removido: {}", livro);
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            logger.error("Erro ao remover livro.", e);
         }
     }
 
@@ -76,8 +84,9 @@ class Biblioteca {
                 int isbn = resultSet.getInt("isbn");
                 livros.add(new Livro(titulo, autor, categoria, isbn));
             }
+            logger.info("Obtidos todos os livros. Total de livros: {}", livros.size());
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            logger.error("Erro ao obter todos os livros.", e);
         }
         return livros;
     }
