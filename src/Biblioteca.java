@@ -1,62 +1,46 @@
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
 class Biblioteca {
-    //Adicionando LOG para salvar qualquer alteração no banco de dados.
     private static final Logger logger = LoggerFactory.getLogger(Biblioteca.class);
     private Connection connection;
+    private LivroDAO livroDAO;
 
     public Biblioteca() {
         try {
             connection = DriverManager.getConnection("jdbc:sqlite:dataBase.db");
             Statement statement = connection.createStatement();
             statement.setQueryTimeout(30);
-            //statement.executeUpdate("DROP TABLE IF EXISTS livros"); -> DROPAR A TABELA (REALIZAÇÃO DE TESTES)
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS livros (id INTEGER PRIMARY KEY AUTOINCREMENT, titulo TEXT, autor TEXT, categoria TEXT, isbn INTEGER, prazoEntrega INTEGER)");
         } catch (SQLException e) {
             System.err.println("Erro ao criar a tabela: " + e.getMessage());
             logger.error("Erro ao criar a tabela: " + e.getMessage());
         }
+
+        livroDAO = new LivroDAOImpl(connection);
+        SwingUtilities.invokeLater(() -> {
+            Menu menu = new Menu(livroDAO);
+            menu.setVisible(true);
+        });
     }
 
     public List<Livro> pesquisarLivro(String termoPesquisa) {
-        List<Livro> livros = new ArrayList<>();
         try {
-            String query = "SELECT * FROM livros WHERE titulo LIKE ? OR autor LIKE ? OR categoria LIKE ? OR isbn LIKE ?";
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setString(1, "%" + termoPesquisa + "%");
-            preparedStatement.setString(2, "%" + termoPesquisa + "%");
-            preparedStatement.setString(3, "%" + termoPesquisa + "%");
-            preparedStatement.setString(4, "%" + termoPesquisa + "%");
-            ResultSet resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                String titulo = resultSet.getString("titulo");
-                String autor = resultSet.getString("autor");
-                String categoria = resultSet.getString("categoria");
-                int isbn = resultSet.getInt("isbn");
-                int prazoEntrega = resultSet.getInt("prazoEntrega");
-                livros.add(new Livro(titulo, autor, categoria, isbn, prazoEntrega));
-            }
+            return livroDAO.pesquisarLivro(termoPesquisa);
         } catch (SQLException e) {
             System.err.println(e.getMessage());
+            logger.error("Erro ao pesquisar livro: " + e.getMessage());
+            return null;
         }
-        return livros;
     }
 
     public void adicionarLivro(Livro livro) {
         try {
-            String query = "INSERT INTO livros (titulo, autor, categoria, isbn, prazoEntrega) VALUES (?, ?, ?, ?, ?)";
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setString(1, livro.getTitulo());
-            preparedStatement.setString(2, livro.getAutor());
-            preparedStatement.setString(3, livro.getCategoria());
-            preparedStatement.setInt(4, livro.getIsbn());
-            preparedStatement.setInt(5, livro.getPrazoEntrega());
-            preparedStatement.executeUpdate();
-            preparedStatement.close();
+            livroDAO.adicionarLivro(livro);
             logger.info("Livro adicionado com sucesso: " + livro.getTitulo());
         } catch (SQLException e) {
             System.err.println("Erro ao adicionar livro: " + e.getMessage());
@@ -66,47 +50,18 @@ class Biblioteca {
 
     public void removerLivro(Livro livro) {
         try {
-            String query = "DELETE FROM livros WHERE id = ?";
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setInt(1, livro.getId());
-            System.out.println("Removendo livro com ID: " + livro.getId());
-            preparedStatement.executeUpdate();
+            livroDAO.removerLivro(livro);
+            logger.info("Livro removido com sucesso: " + livro.getTitulo());
         } catch (SQLException e) {
             System.err.println(e.getMessage());
+            logger.error("Erro ao remover livro: " + e.getMessage());
         }
     }
 
     public void editarLivro(Livro livro) {
-        if (livro == null) {
-            System.err.println("Livro é nulo.");
-            return;
-        }
-
-        if (connection == null) {
-            System.err.println("Conexão com o banco de dados é nula.");
-            return;
-        }
-
-        System.out.println("ID do livro a ser atualizado: " + livro.getId());
         try {
-            String query = "UPDATE livros SET titulo = ?, autor = ?, categoria = ?, isbn = ?, prazoEntrega = ? WHERE id = ?";
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setString(1, livro.getTitulo());
-            preparedStatement.setString(2, livro.getAutor());
-            preparedStatement.setString(3, livro.getCategoria());
-            preparedStatement.setInt(4, livro.getIsbn());
-            preparedStatement.setInt(5, livro.getPrazoEntrega());
-            preparedStatement.setInt(6, livro.getId());
-
-            int rowsUpdated = preparedStatement.executeUpdate();
-            if (rowsUpdated > 0) {
-                System.out.println("Livro atualizado com sucesso: " + livro.getTitulo());
-                logger.info("Livro atualizado com sucesso: " + livro.getTitulo());
-            } else {
-                System.err.println("Nenhuma linha foi atualizada. Verifique se o ID do livro está correto.");
-                logger.warn("Nenhuma linha foi atualizada. Verifique se o ID do livro está correto.");
-            }
-            preparedStatement.close();
+            livroDAO.editarLivro(livro);
+            logger.info("Livro atualizado com sucesso: " + livro.getTitulo());
         } catch (SQLException e) {
             System.err.println("Erro ao atualizar o livro: " + e.getMessage());
             logger.error("Erro ao atualizar o livro: " + e.getMessage());
@@ -114,25 +69,17 @@ class Biblioteca {
     }
 
     public List<Livro> getLivros() {
-        List<Livro> livros = new ArrayList<>();
         try {
-            String query = "SELECT * FROM livros";
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(query);
-            while (resultSet.next()) {
-                String titulo = resultSet.getString("titulo");
-                String autor = resultSet.getString("autor");
-                String categoria = resultSet.getString("categoria");
-                int isbn = resultSet.getInt("isbn");
-                int prazoEntrega = resultSet.getInt("prazoEntrega");
-                livros.add(new Livro(titulo, autor, categoria, isbn, prazoEntrega));
-            }
+            return livroDAO.getLivros();
         } catch (SQLException e) {
             System.err.println(e.getMessage());
+            logger.error("Erro ao obter lista de livros: " + e.getMessage());
+            return null;
         }
-        return livros;
     }
+
 }
+     */
 
 class Livro {
     private int id;
@@ -142,7 +89,8 @@ class Livro {
     private int isbn;
     private int prazoEntrega;
 
-    public Livro(String titulo, String autor, String categoria, int isbn, int prazoEntrega) {
+    public Livro(int id, String titulo, String autor, String categoria, int isbn, int prazoEntrega) {
+        this.id = id;
         this.titulo = titulo;
         this.autor = autor;
         this.categoria = categoria;
@@ -150,9 +98,18 @@ class Livro {
         this.prazoEntrega = prazoEntrega;
     }
 
+    public Livro(String titulo, String autor, String categoria, int isbn, int prazoEntrega, boolean disponibilidade) {
+    }
+
     public int getId() {
         return id;
     }
+
+    /*
+    public void setId(int id) {
+        this.id = id;
+    }
+     */
 
     public String getTitulo() {
         return titulo;

@@ -1,6 +1,9 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 public class LoginScreen extends JFrame {
     private JLabel usernameLabel;
@@ -9,7 +12,6 @@ public class LoginScreen extends JFrame {
     private JPasswordField passwordField;
 
     public LoginScreen() {
-
         setTitle("Login");
         setSize(400, 350); // Configura tamanho da janela
         setDefaultCloseOperation(EXIT_ON_CLOSE); // Configura ação ao fechar janela
@@ -52,7 +54,7 @@ public class LoginScreen extends JFrame {
         fieldsPanel.add(passwordLabel);
         fieldsPanel.add(passwordField);
 
-        // Adiciona tooltips (legandas) aos botões
+        // Adiciona tooltips (legendas) aos campos de texto
         usernameField.setToolTipText("Informe seu usuário");
         passwordField.setToolTipText("Informe sua senha");
 
@@ -73,40 +75,49 @@ public class LoginScreen extends JFrame {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    // Verifica se o usuário e a senha foram preenchidos
-                    if (usernameField.getText().isEmpty() && passwordField.getPassword().length == 0) {
-                        JOptionPane.showMessageDialog(LoginScreen.this, "Por favor, preencha os campos: Usuário e Senha.");
-                    } else if (usernameField.getText().isEmpty()) {
-                        JOptionPane.showMessageDialog(LoginScreen.this, "Por favor, preencha o campo: Usuário.");
-                    } else if (passwordField.getPassword().length == 0){
-                        JOptionPane.showMessageDialog(LoginScreen.this, "Por favor, preencha o campo: Senha.");
-                    } else {
-                        // Exemplo de abrir outra tela (Menu) após o login
-                        new Menu().setVisible(true);
-                        setVisible(false);
-                    }
+                    login();
                 }
             }
         });
 
-        loginButton.addActionListener(e -> {
-            // Verifica se o usuário e a senha foram preenchidos
-            if (usernameField.getText().isEmpty() && passwordField.getPassword().length == 0) {
-                JOptionPane.showMessageDialog(LoginScreen.this, "Por favor, preencha os campos: Usuário e Senha.");
-            } else if (usernameField.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(LoginScreen.this, "Por favor, preencha o campo: Usuário.");
-            } else if (passwordField.getPassword().length == 0){
-                JOptionPane.showMessageDialog(LoginScreen.this, "Por favor, preencha o campo: Senha.");
-            } else {
-                // Exemplo de abrir outra tela (Menu) após o login
-                new Menu().setVisible(true);
-                setVisible(false);
-            }
-        });
-
+        loginButton.addActionListener(e -> login());
     }
 
+    private void login() {
+        // Verifica se o usuário e a senha foram preenchidos
+        if (usernameField.getText().isEmpty() && passwordField.getPassword().length == 0) {
+            JOptionPane.showMessageDialog(LoginScreen.this, "Por favor, preencha os campos: Usuário e Senha.");
+        } else if (usernameField.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(LoginScreen.this, "Por favor, preencha o campo: Usuário.");
+        } else if (passwordField.getPassword().length == 0) {
+            JOptionPane.showMessageDialog(LoginScreen.this, "Por favor, preencha o campo: Senha.");
+        } else {
+            try {
+                Connection conn = obterConexao();
+                if (conn != null) {
+                    new Menu(new LivroDAOImpl(conn)).setVisible(true);
+                    setVisible(false);
+                } else {
+                    JOptionPane.showMessageDialog(LoginScreen.this, "Erro ao conectar ao banco de dados.");
+                }
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(LoginScreen.this, "Erro ao conectar ao banco de dados: " + ex.getMessage());
+            }
+        }
+    }
+
+    private Connection obterConexao() throws SQLException {
+        String url = "jdbc:sqlite:dataBase.db"; // Atualize com o caminho do seu banco de dados
+        return DriverManager.getConnection(url);
+    }
+
+    /*
+    ADICIONAR A FUNCIONALIDADE PARA CRIAR A TABELA DE USUARIOS
+    - CODIGO, NOME, SENHA
+    - JA CRIAR COM USUARIO (ADMIN)
+    - VALIDADAR SE O USUARIO JA EXISTE NA TABELA (CASO NAO RETORNAR ERRO E NAO IR PARA A TELA DE MENU)
+    */
     public static void main(String[] args) {
-        new LoginScreen().setVisible(true);
+        SwingUtilities.invokeLater(() -> new LoginScreen().setVisible(true));
     }
 }
