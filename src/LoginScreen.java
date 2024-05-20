@@ -116,6 +116,7 @@ public class LoginScreen extends JFrame {
     - CODIGO, NOME, SENHA
     - JA CRIAR COM USUARIO (ADMIN)
     - VALIDADAR SE O USUARIO JA EXISTE NA TABELA (CASO NAO RETORNAR ERRO E NAO IR PARA A TELA DE MENU)
+    - CRIAR ESTILOS DE PERMISSÃO -> USUÁRIO SÓ PODE PESQUISAR E FAZER EMPRÉSTIMOS DOS LIVROS QUE ESTÃO DISPONÍVELS.. FUNCIONÁRIOS PODEM MEXER NO SISTEMA GERAL
     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new LoginScreen().setVisible(true));

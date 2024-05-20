@@ -5,8 +5,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class Menu extends JFrame {
+    private static final Logger logger = LoggerFactory.getLogger(Menu.class);
+
     private JTextField searchField;
     private JButton searchButton;
     private JButton addButton;
@@ -142,9 +143,11 @@ public class Menu extends JFrame {
                     JTextField autorField = new JTextField(livro.getAutor(), 10);
                     JTextField categoriaField = new JTextField(livro.getCategoria(), 10);
                     JTextField isbnField = new JTextField(String.valueOf(livro.getIsbn()), 10);
-                    JTextField prazoEntregaField = new JTextField(10);
+                    JTextField prazoEntregaField = new JTextField(String.valueOf(livro.getPrazoEntrega()), 10);
+                    JCheckBox disponibilidadeCheckBox = new JCheckBox();
+                    disponibilidadeCheckBox.setSelected(livro.isDisponibilidade());
 
-                    JPanel panel = new JPanel(new GridLayout(5, 2));
+                    JPanel panel = new JPanel(new GridLayout(6, 2));
                     panel.add(new JLabel("Título:"));
                     panel.add(tituloField);
                     panel.add(new JLabel("Autor:"));
@@ -155,6 +158,8 @@ public class Menu extends JFrame {
                     panel.add(isbnField);
                     panel.add(new JLabel("Prazo de Entrega:"));
                     panel.add(prazoEntregaField);
+                    panel.add(new JLabel("Disponibilidade:"));
+                    panel.add(disponibilidadeCheckBox);
 
                     int result = JOptionPane.showConfirmDialog(null, panel, "Editar Livro", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
@@ -163,16 +168,18 @@ public class Menu extends JFrame {
                         String novoAutor = autorField.getText();
                         String novaCategoria = categoriaField.getText();
                         String novoIsbnStr = isbnField.getText();
-                        String novoPrazoEntrega = prazoEntregaField.getText();
+                        String novoPrazoEntregaStr = prazoEntregaField.getText();
+                        boolean novaDisponibilidade = disponibilidadeCheckBox.isSelected();
 
                         try {
                             int novoIsbn = Integer.parseInt(novoIsbnStr);
-                            int novoPrazo = Integer.parseInt(novoPrazoEntrega);
+                            int novoPrazo = Integer.parseInt(novoPrazoEntregaStr);
                             livro.setTitulo(novoTitulo);
                             livro.setAutor(novoAutor);
                             livro.setCategoria(novaCategoria);
                             livro.setIsbn(novoIsbn);
                             livro.setPrazoEntrega(novoPrazo);
+                            livro.setDisponibilidade(novaDisponibilidade);
 
                             livroDAO.editarLivro(livro);
 
@@ -259,12 +266,21 @@ public class Menu extends JFrame {
                 LivroDAO livroDAO = new LivroDAOImpl(connection);
                 Statement statement = connection.createStatement();
                 statement.setQueryTimeout(30);
-                statement.executeUpdate("CREATE TABLE IF NOT EXISTS livros (id INTEGER PRIMARY KEY AUTOINCREMENT, titulo TEXT, autor TEXT, categoria TEXT, isbn INTEGER, prazoEntrega INTEGER)");
+                statement.executeUpdate(
+                        "CREATE TABLE IF NOT EXISTS livros (" +
+                                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                                "titulo TEXT, " +
+                                "autor TEXT, " +
+                                "categoria TEXT, " +
+                                "isbn INTEGER, " +
+                                "prazoEntrega INTEGER, " +
+                                "disponibilidade BOOLEAN)"
+                );
                 Menu menu = new Menu(livroDAO);
                 menu.setVisible(true);
-           } catch (SQLException e) {
+            } catch (SQLException e) {
                 System.err.println("Erro ao criar a tabela: " + e.getMessage());
-                Logger logger = null;
+                Logger logger = LoggerFactory.getLogger(Menu.class);
                 logger.error("Erro ao criar a tabela: " + e.getMessage());
             }
         });

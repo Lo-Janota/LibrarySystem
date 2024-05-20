@@ -1,9 +1,3 @@
-import java.sql.*;
-import java.util.List;
-import javax.swing.SwingUtilities;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /*
 class Biblioteca {
     private static final Logger logger = LoggerFactory.getLogger(Biblioteca.class);
@@ -80,7 +74,6 @@ class Biblioteca {
 
 }
      */
-
 class Livro {
     private int id;
     private String titulo;
@@ -88,17 +81,25 @@ class Livro {
     private String categoria;
     private int isbn;
     private int prazoEntrega;
+    private boolean disponibilidade;
 
-    public Livro(int id, String titulo, String autor, String categoria, int isbn, int prazoEntrega) {
+    public Livro(int id, String titulo, String autor, String categoria, int isbn, int prazoEntrega, boolean disponibilidade) {
         this.id = id;
         this.titulo = titulo;
         this.autor = autor;
         this.categoria = categoria;
         this.isbn = isbn;
         this.prazoEntrega = prazoEntrega;
+        this.disponibilidade = disponibilidade;
     }
 
     public Livro(String titulo, String autor, String categoria, int isbn, int prazoEntrega, boolean disponibilidade) {
+        this.titulo = titulo;
+        this.autor = autor;
+        this.categoria = categoria;
+        this.isbn = isbn;
+        this.prazoEntrega = prazoEntrega;
+        this.disponibilidade = disponibilidade;
     }
 
     public int getId() {
@@ -151,6 +152,18 @@ class Livro {
         this.prazoEntrega = prazoEntrega;
     }
 
+    public boolean isDisponibilidade() {
+        return disponibilidade;
+    }
+
+    public boolean getDisponibilidade() {
+        return disponibilidade;
+    }
+
+    public void setDisponibilidade(boolean disponibilidade) {
+        this.disponibilidade = disponibilidade;
+    }
+
     @Override
     public String toString() {
         return "Livro: " +
@@ -160,6 +173,7 @@ class Livro {
                 " | Categoria = '" + categoria + '\'' +
                 " | ISBN = " + isbn +
                 " | Prazo de Entrega = " + prazoEntrega +
-                " dias";
+                " dias | Disponibilidade = " + (disponibilidade ? "Disponível" : "Indisponível");
     }
+
 }

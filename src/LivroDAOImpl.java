@@ -26,7 +26,8 @@ public class LivroDAOImpl implements LivroDAO {
                     String categoria = resultSet.getString("categoria");
                     int isbn = resultSet.getInt("isbn");
                     int prazoEntrega = resultSet.getInt("prazoEntrega");
-                    livros.add(new Livro(id, titulo, autor, categoria, isbn, prazoEntrega));
+                    boolean disponibilidade = resultSet.getBoolean("Disponibilidade");
+                    livros.add(new Livro(id, titulo, autor, categoria, isbn, prazoEntrega, disponibilidade));
                 }
             }
         }
@@ -35,13 +36,14 @@ public class LivroDAOImpl implements LivroDAO {
 
     @Override
     public void adicionarLivro(Livro livro) throws SQLException {
-        String query = "INSERT INTO livros (titulo, autor, categoria, isbn, prazoEntrega) VALUES (?, ?, ?, ?, ?)";
+        String query = "INSERT INTO livros (titulo, autor, categoria, isbn, prazoEntrega, disponibilidade) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setString(1, livro.getTitulo());
             preparedStatement.setString(2, livro.getAutor());
             preparedStatement.setString(3, livro.getCategoria());
             preparedStatement.setInt(4, livro.getIsbn());
             preparedStatement.setInt(5, livro.getPrazoEntrega());
+            preparedStatement.setBoolean(6, livro.getDisponibilidade());
             preparedStatement.executeUpdate();
         }
     }
@@ -57,14 +59,15 @@ public class LivroDAOImpl implements LivroDAO {
 
     @Override
     public void editarLivro(Livro livro) throws SQLException {
-        String query = "UPDATE livros SET titulo = ?, autor = ?, categoria = ?, isbn = ?, prazoEntrega = ? WHERE id = ?";
+        String query = "UPDATE livros SET titulo = ?, autor = ?, categoria = ?, isbn = ?, prazoEntrega = ?, disponibilidade = ? WHERE id = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setString(1, livro.getTitulo());
             preparedStatement.setString(2, livro.getAutor());
             preparedStatement.setString(3, livro.getCategoria());
             preparedStatement.setInt(4, livro.getIsbn());
             preparedStatement.setInt(5, livro.getPrazoEntrega());
-            preparedStatement.setInt(6, livro.getId());
+            preparedStatement.setBoolean(6, livro.getDisponibilidade());
+            preparedStatement.setInt(7, livro.getId());
             preparedStatement.executeUpdate();
         }
     }
@@ -82,7 +85,8 @@ public class LivroDAOImpl implements LivroDAO {
                 String categoria = resultSet.getString("categoria");
                 int isbn = resultSet.getInt("isbn");
                 int prazoEntrega = resultSet.getInt("prazoEntrega");
-                livros.add(new Livro(id, titulo, autor, categoria, isbn, prazoEntrega));
+                boolean disponibilidade = resultSet.getBoolean("disponibilidade");
+                livros.add(new Livro(id, titulo, autor, categoria, isbn, prazoEntrega, disponibilidade));
             }
         }
         return livros;
