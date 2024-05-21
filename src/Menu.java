@@ -22,18 +22,18 @@ public class Menu extends JFrame {
         this.livroDAO = livroDAO;
 
         setTitle("Menu Biblioteca");
-        setSize(750, 400);
+        setSize(900, 400);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
         searchField = new JTextField(20);
-        searchButton = new JButton("🔎");
-        addButton = new JButton("➕");
-        deleteButton = new JButton("❌");
-        configButton = new JButton("🙋‍");
-        editButton = new JButton("🔧");
-        prazoButton = new JButton("⏳");
+        searchButton = new JButton("Pesquisar");
+        addButton = new JButton("Adicionar");
+        deleteButton = new JButton("Remover");
+        configButton = new JButton("Usuarios");
+        editButton = new JButton("Editar");
+        prazoButton = new JButton("Prazos");
         bookListArea = new JTextArea();
         bookListArea.setEditable(false);
 
@@ -50,7 +50,7 @@ public class Menu extends JFrame {
         topPanel.add(searchPanel, BorderLayout.CENTER);
         topPanel.add(configButton, BorderLayout.WEST);
 
-        Dimension buttonSize = new Dimension(60, 30);
+        Dimension buttonSize = new Dimension(85, 30);
         searchButton.setPreferredSize(buttonSize);
         addButton.setPreferredSize(buttonSize);
         deleteButton.setPreferredSize(buttonSize);
@@ -71,7 +71,15 @@ public class Menu extends JFrame {
         add(scrollPane, BorderLayout.CENTER);
 
         configButton.addActionListener(e -> {
-            JOptionPane.showMessageDialog(null, "Configuração de usuários aqui...");
+            JFrame configFrame = new JFrame("Configuração de Usuários");
+            configFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            configFrame.setSize(400, 300);
+            configFrame.setLocationRelativeTo(null);
+
+            ConfigUsers configUsers = new ConfigUsers();
+            configFrame.add(configUsers);
+
+            configFrame.setVisible(true);
         });
 
         searchButton.addActionListener(e -> {

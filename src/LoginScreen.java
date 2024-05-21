@@ -1,9 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class LoginScreen extends JFrame {
     private JLabel usernameLabel;
@@ -36,11 +34,11 @@ public class LoginScreen extends JFrame {
         fieldsPanel.setLayout(new BoxLayout(fieldsPanel, BoxLayout.Y_AXIS)); // Organiza os componentes verticalmente
         fieldsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Adiciona margem
 
-        usernameLabel = new JLabel("Usuário:");
+        usernameLabel = new JLabel("Código:");
         passwordLabel = new JLabel("Senha:");
         usernameField = new JTextField(20); // Define o tamanho do campo de usuário
         passwordField = new JPasswordField(20); // Define o tamanho do campo de senha
-        JButton loginButton = new JButton("Login");
+        JButton loginButton = new JButton("Entrar");
 
         // Define o tamanho mínimo e máximo da altura dos campos de texto
         usernameField.setMaximumSize(new Dimension(Integer.MAX_VALUE, usernameField.getPreferredSize().height));
@@ -55,7 +53,7 @@ public class LoginScreen extends JFrame {
         fieldsPanel.add(passwordField);
 
         // Adiciona tooltips (legendas) aos campos de texto
-        usernameField.setToolTipText("Informe seu usuário");
+        usernameField.setToolTipText("Informe seu código");
         passwordField.setToolTipText("Informe sua senha");
 
         // Adiciona um espaço flexível entre os campos de senha e o botão de login
@@ -81,6 +79,9 @@ public class LoginScreen extends JFrame {
         });
 
         loginButton.addActionListener(e -> login());
+
+        // Cria a tabela de usuários e adiciona o usuário padrão ADMIN
+        criarTabelaUsuarios();
     }
 
     private void login() {
@@ -95,8 +96,12 @@ public class LoginScreen extends JFrame {
             try {
                 Connection conn = obterConexao();
                 if (conn != null) {
-                    new Menu(new LivroDAOImpl(conn)).setVisible(true);
-                    setVisible(false);
+                    if (validarUsuario(conn, usernameField.getText(), new String(passwordField.getPassword()))) {
+                        new Menu(new LivroDAOImpl(conn)).setVisible(true);
+                        setVisible(false);
+                    } else {
+                        JOptionPane.showMessageDialog(LoginScreen.this, "Usuário ou senha incorretos.");
+                    }
                 } else {
                     JOptionPane.showMessageDialog(LoginScreen.this, "Erro ao conectar ao banco de dados.");
                 }
@@ -111,13 +116,44 @@ public class LoginScreen extends JFrame {
         return DriverManager.getConnection(url);
     }
 
-    /*
-    ADICIONAR A FUNCIONALIDADE PARA CRIAR A TABELA DE USUARIOS
-    - CODIGO, NOME, SENHA
-    - JA CRIAR COM USUARIO (ADMIN)
-    - VALIDADAR SE O USUARIO JA EXISTE NA TABELA (CASO NAO RETORNAR ERRO E NAO IR PARA A TELA DE MENU)
-    - CRIAR ESTILOS DE PERMISSÃO -> USUÁRIO SÓ PODE PESQUISAR E FAZER EMPRÉSTIMOS DOS LIVROS QUE ESTÃO DISPONÍVELS.. FUNCIONÁRIOS PODEM MEXER NO SISTEMA GERAL
-    */
+    private void criarTabelaUsuarios() {
+        try (Connection conn = obterConexao();
+             Statement stmt = conn.createStatement()) {
+            String sql = "CREATE TABLE IF NOT EXISTS usuarios (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "codigo INTEGER NOT NULL, " +
+                    "nome TEXT NOT NULL, " +
+                    "senha TEXT NOT NULL, " +
+                    "permissao TEXT NOT NULL)";
+            stmt.executeUpdate(sql);
+
+            // Insere o usuário padrão ADMIN se ele não existir
+            String sqlAdmin = "INSERT INTO usuarios (codigo, nome, senha, permissao) " +
+                    "SELECT 1, 'ADMIN', 'admin', 'FUNCIONARIO' " +
+                    "WHERE NOT EXISTS (SELECT 1 FROM usuarios WHERE nome = 'ADMIN')";
+            stmt.executeUpdate(sqlAdmin);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean validarUsuario(Connection conn, String codigo, String senha) throws SQLException {
+        String sql = "SELECT * FROM usuarios WHERE codigo = ? AND senha = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, codigo);
+            pstmt.setString(2, senha);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    String permissao = rs.getString("permissao");
+                    if ("FUNCIONARIO".equals(permissao) || "USUARIO".equals(permissao)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new LoginScreen().setVisible(true));
     }
