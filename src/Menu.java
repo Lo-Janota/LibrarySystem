@@ -73,7 +73,7 @@ public class Menu extends JFrame {
         configButton.addActionListener(e -> {
             JFrame configFrame = new JFrame("Configuração de Usuários");
             configFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            configFrame.setSize(400, 300);
+            configFrame.setSize(500, 300);
             configFrame.setLocationRelativeTo(null);
 
             ConfigUsers configUsers = new ConfigUsers();

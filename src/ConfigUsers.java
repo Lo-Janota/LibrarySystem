@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -6,40 +7,46 @@ import java.sql.*;
 
 public class ConfigUsers extends JPanel {
     private Connection conn;
-    private DefaultListModel<String> listModel; // Modelo de lista para o JList
+    private DefaultTableModel tableModel;
+    private JTextField searchField;
+    private JButton searchButton;
 
     public ConfigUsers() {
-        conn = conectarBanco(); // Conectar ao banco de dados SQLite
+        conn = conectarBanco();
         if (conn == null) {
             JOptionPane.showMessageDialog(null, "Erro ao conectar ao banco de dados.", "Erro", JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
 
-        listModel = new DefaultListModel<>(); // Inicializa o modelo de lista
+        tableModel = new DefaultTableModel(new String[]{"ID", "Código", "Nome", "Senha", "Permissão"}, 0);
 
-        setLayout(new BorderLayout()); // Define o layout do painel como BorderLayout
+        setLayout(new BorderLayout());
 
-        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER)); // Painel para os botões de ação
-        JButton addButton = new JButton("Adicionar"); // Botão para adicionar usuário
-        JButton editButton = new JButton("Editar"); // Botão para editar usuário
-        JButton removeButton = new JButton("Excluir"); // Botão para remover usuário
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JButton addButton = new JButton("Adicionar");
+        JButton editButton = new JButton("Editar");
+        JButton removeButton = new JButton("Excluir");
+        searchField = new JTextField(20);
+        searchButton = new JButton("Pesquisar");
 
-        buttonsPanel.add(addButton); // Adiciona o botão de adicionar usuário ao painel de botões
-        buttonsPanel.add(editButton); // Adiciona o botão de editar usuário ao painel de botões
-        buttonsPanel.add(removeButton); // Adiciona o botão de remover usuário ao painel de botões
+        buttonsPanel.add(addButton);
+        buttonsPanel.add(editButton);
+        buttonsPanel.add(removeButton);
+        buttonsPanel.add(searchField);
+        buttonsPanel.add(searchButton);
 
-        // Adiciona tooltips aos botões
         addButton.setToolTipText("Adicionar Usuário");
         editButton.setToolTipText("Editar Usuário");
         removeButton.setToolTipText("Remover Usuário");
+        searchField.setToolTipText("Pesquisar por Código ou Nome");
+        searchButton.setToolTipText("Clique para pesquisar usuários");
 
-        JList<String> userList = new JList<>(listModel); // Lista de usuários
-        JScrollPane scrollPane = new JScrollPane(userList); // Cria um JScrollPane para a lista de usuários
+        JTable userTable = new JTable(tableModel);
+        JScrollPane scrollPane = new JScrollPane(userTable);
 
-        add(buttonsPanel, BorderLayout.NORTH); // Adiciona o painel de botões à parte superior do painel de configuração
-        add(scrollPane, BorderLayout.CENTER); // Adiciona o JScrollPane à parte central do painel de configuração
+        add(buttonsPanel, BorderLayout.NORTH);
+        add(scrollPane, BorderLayout.CENTER);
 
-        // Adiciona um ActionListener ao botão de adicionar usuário
         addButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -47,15 +54,19 @@ public class ConfigUsers extends JPanel {
             }
         });
 
-        // Adiciona um ActionListener ao botão de editar usuário
         editButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                exibirTelaEditarUsuario();
+                int selectedRow = userTable.getSelectedRow();
+                if (selectedRow != -1) {
+                    String nomeUsuario = (String) tableModel.getValueAt(selectedRow, 2);
+                    exibirTelaEditarUsuario(nomeUsuario);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Selecione um usuário para editar.", "Erro", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
 
-        // Adiciona um ActionListener ao botão de remover usuário
         removeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -63,11 +74,16 @@ public class ConfigUsers extends JPanel {
             }
         });
 
-        // Inicializa a lista de usuários
+        searchButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pesquisarUsuario(searchField.getText());
+            }
+        });
+
         atualizarListaUsuarios();
     }
 
-    // Conecta ao banco de dados SQLite
     private Connection conectarBanco() {
         try {
             Class.forName("org.sqlite.JDBC");
@@ -79,13 +95,17 @@ public class ConfigUsers extends JPanel {
         }
     }
 
-    // Método para exibir a tela de adicionar usuário
     private void exibirTelaAdicionarUsuario() {
-        JPanel panel = new JPanel(new GridLayout(4, 1));
+        JPanel panel = new JPanel(new GridLayout(5, 1));
         JTextField codigoField = new JTextField();
         JTextField nomeField = new JTextField();
         JPasswordField senhaField = new JPasswordField();
-        JTextField permissaoField = new JTextField();
+        JCheckBox funcionarioCheckBox = new JCheckBox("Funcionario");
+        JCheckBox usuarioCheckBox = new JCheckBox("Usuario");
+
+        ButtonGroup group = new ButtonGroup();
+        group.add(funcionarioCheckBox);
+        group.add(usuarioCheckBox);
 
         panel.add(new JLabel("Codigo:"));
         panel.add(codigoField);
@@ -93,8 +113,8 @@ public class ConfigUsers extends JPanel {
         panel.add(nomeField);
         panel.add(new JLabel("Senha:"));
         panel.add(senhaField);
-        panel.add(new JLabel("Permissao:"));
-        panel.add(permissaoField);
+        panel.add(funcionarioCheckBox);
+        panel.add(usuarioCheckBox);
 
         int result = JOptionPane.showConfirmDialog(null, panel, "Adicionar Usuário",
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
@@ -103,20 +123,83 @@ public class ConfigUsers extends JPanel {
             String codigo = codigoField.getText();
             String nome = nomeField.getText();
             String senha = new String(senhaField.getPassword());
-            String permissao = permissaoField.getText();
+            String permissao = funcionarioCheckBox.isSelected() ? "FUNCIONARIO" : usuarioCheckBox.isSelected() ? "USUARIO" : "";
 
-            // Verifica se o código já existe no banco de dados
+            if (permissao.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Selecione uma permissão.", "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
             if (codigoExiste(codigo)) {
                 JOptionPane.showMessageDialog(null, "Já existe um usuário com esse código.", "Erro", JOptionPane.ERROR_MESSAGE);
             } else {
-                // Insere o novo usuário no banco de dados
                 inserirUsuario(codigo, nome, senha, permissao);
                 atualizarListaUsuarios();
             }
         }
     }
 
-    // Verifica se um código de usuário já existe no banco de dados
+    private void exibirTelaEditarUsuario(String nomeUsuario) {
+        if (nomeUsuario == null || nomeUsuario.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Selecione um usuário para editar.", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try {
+            PreparedStatement statement = conn.prepareStatement("SELECT * FROM usuarios WHERE nome = ?");
+            statement.setString(1, nomeUsuario);
+            ResultSet rs = statement.executeQuery();
+
+            if (rs.next()) {
+                JPanel panel = new JPanel(new GridLayout(4, 1));
+                JTextField nomeField = new JTextField(rs.getString("nome"));
+                JPasswordField senhaField = new JPasswordField(rs.getString("senha"));
+                JCheckBox funcionarioCheckBox = new JCheckBox("Funcionario");
+                JCheckBox usuarioCheckBox = new JCheckBox("Usuario");
+
+                String permissao = rs.getString("permissao");
+                if (permissao.equals("FUNCIONARIO")) {
+                    funcionarioCheckBox.setSelected(true);
+                } else if (permissao.equals("USUARIO")) {
+                    usuarioCheckBox.setSelected(true);
+                }
+
+                ButtonGroup group = new ButtonGroup();
+                group.add(funcionarioCheckBox);
+                group.add(usuarioCheckBox);
+
+                panel.add(new JLabel("Nome:"));
+                panel.add(nomeField);
+                panel.add(new JLabel("Senha:"));
+                panel.add(senhaField);
+                panel.add(funcionarioCheckBox);
+                panel.add(usuarioCheckBox);
+
+                int result = JOptionPane.showConfirmDialog(null, panel, "Editar Usuário",
+                        JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+                if (result == JOptionPane.OK_OPTION) {
+                    String novoNome = nomeField.getText();
+                    String novaSenha = new String(senhaField.getPassword());
+                    String novaPermissao = funcionarioCheckBox.isSelected() ? "FUNCIONARIO" : usuarioCheckBox.isSelected() ? "USUARIO" : "";
+
+                    if (novaPermissao.isEmpty()) {
+                        JOptionPane.showMessageDialog(null, "Selecione uma permissão.", "Erro", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    atualizarUsuario(nomeUsuario, novoNome, novaSenha, novaPermissao);
+                    atualizarListaUsuarios();
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Usuário não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Erro ao obter informações do usuário.", "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     private boolean codigoExiste(String codigo) {
         try {
             PreparedStatement statement = conn.prepareStatement("SELECT * FROM usuarios WHERE codigo = ?");
@@ -129,9 +212,7 @@ public class ConfigUsers extends JPanel {
         }
     }
 
-    // Insere um novo usuário no banco de dados
-    private void inserirUsuario(String codigo, String nome
-            , String senha, String permissao) {
+    private void inserirUsuario(String codigo, String nome, String senha, String permissao) {
         try {
             PreparedStatement statement = conn.prepareStatement("INSERT INTO usuarios (codigo, nome, senha, permissao) VALUES (?, ?, ?, ?)");
             statement.setString(1, codigo);
@@ -146,25 +227,13 @@ public class ConfigUsers extends JPanel {
         }
     }
 
-    // Método para exibir a tela de editar usuário
-    private void exibirTelaEditarUsuario() {
-        String nomeUsuario = JOptionPane.showInputDialog("Digite o nome do usuário a ser editado:");
-        if (nomeUsuario != null && !nomeUsuario.isEmpty()) {
-            String novoNome = JOptionPane.showInputDialog("Digite o novo nome do usuário:");
-            if (novoNome != null && !novoNome.isEmpty()) {
-                // Atualiza o usuário no banco de dados
-                atualizarUsuario(nomeUsuario, novoNome);
-                atualizarListaUsuarios();
-            }
-        }
-    }
-
-    // Atualiza um usuário no banco de dados
-    private void atualizarUsuario(String nomeAntigo, String novoNome) {
+    private void atualizarUsuario(String nomeAntigo, String novoNome, String novaSenha, String novaPermissao) {
         try {
-            PreparedStatement statement = conn.prepareStatement("UPDATE usuarios SET nome = ? WHERE nome = ?");
+            PreparedStatement statement = conn.prepareStatement("UPDATE usuarios SET nome = ?, senha = ?, permissao = ? WHERE nome = ?");
             statement.setString(1, novoNome);
-            statement.setString(2, nomeAntigo);
+            statement.setString(2, novaSenha);
+            statement.setString(3, novaPermissao);
+            statement.setString(4, nomeAntigo);
             int rowsUpdated = statement.executeUpdate();
             if (rowsUpdated > 0) {
                 JOptionPane.showMessageDialog(null, "Usuário editado com sucesso.", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
@@ -177,17 +246,14 @@ public class ConfigUsers extends JPanel {
         }
     }
 
-    // Método para exibir a tela de remover usuário
     private void exibirTelaRemoverUsuario() {
         String nomeUsuario = JOptionPane.showInputDialog("Digite o nome do usuário a ser removido:");
         if (nomeUsuario != null && !nomeUsuario.isEmpty()) {
-            // Remove o usuário do banco de dados
             removerUsuario(nomeUsuario);
             atualizarListaUsuarios();
         }
     }
 
-    // Remove um usuário do banco de dados
     private void removerUsuario(String nomeUsuario) {
         try {
             PreparedStatement statement = conn.prepareStatement("DELETE FROM usuarios WHERE nome = ?");
@@ -204,18 +270,43 @@ public class ConfigUsers extends JPanel {
         }
     }
 
-    // Atualiza a lista de usuários no JList
-    private void atualizarListaUsuarios() {
-        // Limpa o modelo de lista
-        listModel.clear();
+    private void pesquisarUsuario(String criterio) {
+        tableModel.setRowCount(0);
 
-        // Obtém os usuários do banco de dados e os adiciona ao modelo de lista
+        try {
+            String query = "SELECT * FROM usuarios WHERE codigo = ? OR nome LIKE ?";
+            PreparedStatement statement = conn.prepareStatement(query);
+            statement.setString(1, criterio);
+            statement.setString(2, "%" + criterio + "%");
+            ResultSet rs = statement.executeQuery();
+
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                int codigo = rs.getInt("codigo");
+                String nome = rs.getString("nome");
+                String senha = rs.getString("senha");
+                String permissao = rs.getString("permissao");
+                tableModel.addRow(new Object[]{id, codigo, nome, senha, permissao});
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Erro ao realizar a pesquisa.", "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void atualizarListaUsuarios() {
+        tableModel.setRowCount(0);
+
         try {
             Statement statement = conn.createStatement();
             ResultSet rs = statement.executeQuery("SELECT * FROM usuarios");
             while (rs.next()) {
+                int id = rs.getInt("id");
+                int codigo = rs.getInt("codigo");
                 String nome = rs.getString("nome");
-                listModel.addElement(nome);
+                String senha = rs.getString("senha");
+                String permissao = rs.getString("permissao");
+                tableModel.addRow(new Object[]{id, codigo, nome, senha, permissao});
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -223,12 +314,11 @@ public class ConfigUsers extends JPanel {
         }
     }
 
-    // Método principal para executar a aplicação Swing
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Configuração de Usuários");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(400, 300);
+            frame.setSize(750, 400);
             frame.setLocationRelativeTo(null);
 
             ConfigUsers configUsers = new ConfigUsers();
@@ -237,5 +327,5 @@ public class ConfigUsers extends JPanel {
             frame.setVisible(true);
         });
     }
-
 }
+
