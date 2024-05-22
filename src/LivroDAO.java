@@ -12,4 +12,7 @@ public interface LivroDAO {
             throws SQLException;
     List<Livro> getLivros()
             throws SQLException;
+
+    void atualizarPrazo(int id, int prazo)
+            throws SQLException;
 }

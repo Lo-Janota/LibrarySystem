@@ -1,13 +1,10 @@
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.*;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class Menu extends JFrame {
-    private static final Logger logger = LoggerFactory.getLogger(Menu.class);
-
     private JTextField searchField;
     private JButton searchButton;
     private JButton addButton;
@@ -15,7 +12,7 @@ public class Menu extends JFrame {
     private JButton configButton;
     private JButton editButton;
     private JButton prazoButton;
-    private JTextArea bookListArea;
+    private JTable bookTable;
     private LivroDAO livroDAO;
 
     public Menu(LivroDAO livroDAO) {
@@ -34,8 +31,6 @@ public class Menu extends JFrame {
         configButton = new JButton("Usuarios");
         editButton = new JButton("Editar");
         prazoButton = new JButton("Prazos");
-        bookListArea = new JTextArea();
-        bookListArea.setEditable(false);
 
         JPanel topPanel = new JPanel(new BorderLayout());
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -43,8 +38,8 @@ public class Menu extends JFrame {
         searchPanel.add(searchField);
         searchPanel.add(searchButton);
         searchPanel.add(addButton);
-        searchPanel.add(deleteButton);
         searchPanel.add(editButton);
+        searchPanel.add(deleteButton);
         searchPanel.add(prazoButton);
 
         topPanel.add(searchPanel, BorderLayout.CENTER);
@@ -58,22 +53,27 @@ public class Menu extends JFrame {
         editButton.setPreferredSize(buttonSize);
         prazoButton.setPreferredSize(buttonSize);
 
-        searchButton.setToolTipText("Pesquisar");
-        addButton.setToolTipText("Adicionar");
-        deleteButton.setToolTipText("Excluir");
-        configButton.setToolTipText("Configurações de Usuários");
-        editButton.setToolTipText("Editar");
-        prazoButton.setToolTipText("Prazo de Entrega");
+        JPanel tablePanel = new JPanel(new BorderLayout());
+        DefaultTableModel tableModel = new DefaultTableModel();
+        bookTable = new JTable(tableModel);
+        tableModel.addColumn("ID");
+        tableModel.addColumn("Título");
+        tableModel.addColumn("Autor");
+        tableModel.addColumn("Categoria");
+        tableModel.addColumn("ISBN");
+        tableModel.addColumn("Prazo");
+        tableModel.addColumn("Disponibilidade");
 
-        JScrollPane scrollPane = new JScrollPane(bookListArea);
+        JScrollPane scrollPane = new JScrollPane(bookTable);
+        tablePanel.add(scrollPane, BorderLayout.CENTER);
 
         add(topPanel, BorderLayout.NORTH);
-        add(scrollPane, BorderLayout.CENTER);
+        add(tablePanel, BorderLayout.CENTER);
 
         configButton.addActionListener(e -> {
             JFrame configFrame = new JFrame("Configuração de Usuários");
             configFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            configFrame.setSize(500, 300);
+            configFrame.setSize(750, 300);
             configFrame.setLocationRelativeTo(null);
 
             ConfigUsers configUsers = new ConfigUsers();
@@ -86,11 +86,11 @@ public class Menu extends JFrame {
             String termoPesquisa = searchField.getText().toLowerCase();
             try {
                 List<Livro> resultado = livroDAO.pesquisarLivro(termoPesquisa);
-                StringBuilder sb = new StringBuilder();
+                DefaultTableModel model = (DefaultTableModel) bookTable.getModel();
+                model.setRowCount(0); // Limpa a tabela
                 for (Livro livro : resultado) {
-                    sb.append(livro).append("\n");
+                    model.addRow(new Object[]{livro.getId(), livro.getTitulo(), livro.getAutor(), livro.getCategoria(), livro.getIsbn(), livro.getPrazoEntrega(), livro.isDisponibilidade()});
                 }
-                bookListArea.setText(sb.toString());
             } catch (SQLException ex) {
                 JOptionPane.showMessageDialog(null, "Erro ao pesquisar livros: " + ex.getMessage());
             }
@@ -143,110 +143,108 @@ public class Menu extends JFrame {
         });
 
         editButton.addActionListener(e -> {
-            String termoPesquisa = searchField.getText().toLowerCase();
-            try {
-                Livro livro = livroDAO.pesquisarLivro(termoPesquisa).stream().findFirst().orElse(null);
-                if (livro != null) {
-                    JTextField tituloField = new JTextField(livro.getTitulo(), 10);
-                    JTextField autorField = new JTextField(livro.getAutor(), 10);
-                    JTextField categoriaField = new JTextField(livro.getCategoria(), 10);
-                    JTextField isbnField = new JTextField(String.valueOf(livro.getIsbn()), 10);
-                    JTextField prazoEntregaField = new JTextField(String.valueOf(livro.getPrazoEntrega()), 10);
-                    JCheckBox disponibilidadeCheckBox = new JCheckBox();
-                    disponibilidadeCheckBox.setSelected(livro.isDisponibilidade());
+            int selectedRow = bookTable.getSelectedRow();
+            if (selectedRow != -1) {
+                int id = (int) bookTable.getValueAt(selectedRow, 0);
+                String titulo = (String) bookTable.getValueAt(selectedRow, 1);
+                String autor = (String) bookTable.getValueAt(selectedRow, 2);
+                String categoria = (String) bookTable.getValueAt(selectedRow, 3);
+                int isbn = (int) bookTable.getValueAt(selectedRow, 4);
+                int prazo = (int) bookTable.getValueAt(selectedRow, 5);
+                boolean disponibilidade = (boolean) bookTable.getValueAt(selectedRow, 6);
 
-                    JPanel panel = new JPanel(new GridLayout(6, 2));
-                    panel.add(new JLabel("Título:"));
-                    panel.add(tituloField);
-                    panel.add(new JLabel("Autor:"));
-                    panel.add(autorField);
-                    panel.add(new JLabel("Categoria:"));
-                    panel.add(categoriaField);
-                    panel.add(new JLabel("ISBN:"));
-                    panel.add(isbnField);
-                    panel.add(new JLabel("Prazo de Entrega:"));
-                    panel.add(prazoEntregaField);
-                    panel.add(new JLabel("Disponibilidade:"));
-                    panel.add(disponibilidadeCheckBox);
+                JTextField tituloField = new JTextField(titulo, 10);
+                JTextField autorField = new JTextField(autor, 10);
+                JTextField categoriaField = new JTextField(categoria, 10);
+                JTextField isbnField = new JTextField(String.valueOf(isbn), 10);
+                JTextField prazoEntregaField = new JTextField(String.valueOf(prazo), 10);
+                JCheckBox disponibilidadeCheckBox = new JCheckBox();
+                disponibilidadeCheckBox.setSelected(disponibilidade);
 
-                    int result = JOptionPane.showConfirmDialog(null, panel, "Editar Livro", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                JPanel panel = new JPanel(new GridLayout(6, 2));
+                panel.add(new JLabel("Título:"));
+                panel.add(tituloField);
+                panel.add(new JLabel("Autor:"));
+                panel.add(autorField);
+                panel.add(new JLabel("Categoria:"));
+                panel.add(categoriaField);
+                panel.add(new JLabel("ISBN:"));
+                panel.add(isbnField);
+                panel.add(new JLabel("Prazo de Entrega:"));
+                panel.add(prazoEntregaField);
+                panel.add(new JLabel("Disponibilidade:"));
+                panel.add(disponibilidadeCheckBox);
 
-                    if (result == JOptionPane.OK_OPTION) {
-                        String novoTitulo = tituloField.getText();
-                        String novoAutor = autorField.getText();
-                        String novaCategoria = categoriaField.getText();
-                        String novoIsbnStr = isbnField.getText();
-                        String novoPrazoEntregaStr = prazoEntregaField.getText();
-                        boolean novaDisponibilidade = disponibilidadeCheckBox.isSelected();
+                int result = JOptionPane.showConfirmDialog(null, panel, "Editar Livro", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
-                        try {
-                            int novoIsbn = Integer.parseInt(novoIsbnStr);
-                            int novoPrazo = Integer.parseInt(novoPrazoEntregaStr);
-                            livro.setTitulo(novoTitulo);
-                            livro.setAutor(novoAutor);
-                            livro.setCategoria(novaCategoria);
-                            livro.setIsbn(novoIsbn);
-                            livro.setPrazoEntrega(novoPrazo);
-                            livro.setDisponibilidade(novaDisponibilidade);
+                if (result == JOptionPane.OK_OPTION) {
+                    String novoTitulo = tituloField.getText();
+                    String novoAutor = autorField.getText();
+                    String novaCategoria = categoriaField.getText();
+                    String novoIsbnStr = isbnField.getText();
+                    String novoPrazoEntregaStr = prazoEntregaField.getText();
+                    boolean novaDisponibilidade = disponibilidadeCheckBox.isSelected();
 
-                            livroDAO.editarLivro(livro);
-
-                            atualizarListaLivros();
-                            JOptionPane.showMessageDialog(null, "Livro editado com sucesso!");
-                        } catch (NumberFormatException ex) {
-                            JOptionPane.showMessageDialog(null, "O ISBN deve ser um número inteiro.");
-                        } catch (SQLException ex) {
-                            JOptionPane.showMessageDialog(null, "Erro ao editar livro: " + ex.getMessage());
-                        }
+                    try {
+                        int novoIsbn = Integer.parseInt(novoIsbnStr);
+                        int novoPrazo = Integer.parseInt(novoPrazoEntregaStr);
+                        Livro livro = new Livro(id, novoTitulo, novoAutor, novaCategoria, novoIsbn, novoPrazo, novaDisponibilidade);
+                        livroDAO.editarLivro(livro);
+                        atualizarListaLivros();
+                        JOptionPane.showMessageDialog(null, "Livro editado com sucesso!");
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(null, "O ISBN e o Prazo de Entrega devem ser números inteiros.");
+                    } catch (SQLException ex) {
+                        JOptionPane.showMessageDialog(null, "Erro ao editar livro: " + ex.getMessage());
                     }
-                } else {
-                    JOptionPane.showMessageDialog(null, "Livro não encontrado.");
                 }
-            } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(null, "Erro ao pesquisar livros: " + ex.getMessage());
+            } else {
+                JOptionPane.showMessageDialog(null, "Selecione um livro para editar.");
             }
         });
 
         deleteButton.addActionListener(e -> {
-            String termoPesquisa = searchField.getText().toLowerCase();
-            try {
-                Livro livro = livroDAO.pesquisarLivro(termoPesquisa).stream().findFirst().orElse(null);
-                if (livro != null) {
-                    int confirmacao = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover o livro '" + livro.getTitulo() + "'?", "Confirmar Remoção", JOptionPane.YES_NO_OPTION);
-                    if (confirmacao == JOptionPane.YES_OPTION) {
+            int selectedRow = bookTable.getSelectedRow();
+            if (selectedRow != -1) {
+                int id = (int) bookTable.getValueAt(selectedRow, 0);
+                String titulo = (String) bookTable.getValueAt(selectedRow, 1);
+
+                int confirmacao = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover o livro '" + titulo + "'?", "Confirmar Remoção", JOptionPane.YES_NO_OPTION);
+                if (confirmacao == JOptionPane.YES_OPTION) {
+                    try {
+                        Livro livro = new Livro(id, titulo);
                         livroDAO.removerLivro(livro);
                         atualizarListaLivros();
                         JOptionPane.showMessageDialog(null, "Livro removido com sucesso!");
+                    } catch (SQLException ex) {
+                        JOptionPane.showMessageDialog(null, "Erro ao remover livro: " + ex.getMessage());
                     }
-                } else {
-                    JOptionPane.showMessageDialog(null, "Livro não encontrado.");
                 }
-            } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(null, "Erro ao pesquisar livros: " + ex.getMessage());
+            } else {
+                JOptionPane.showMessageDialog(null, "Selecione um livro para remover.");
             }
         });
 
         prazoButton.addActionListener(e -> {
-            String termoPesquisa = searchField.getText().toLowerCase();
-            try {
-                Livro livro = livroDAO.pesquisarLivro(termoPesquisa).stream().findFirst().orElse(null);
-                if (livro != null) {
-                    String prazoStr = JOptionPane.showInputDialog("Informe o prazo de empréstimos em dias:");
+            int selectedRow = bookTable.getSelectedRow();
+            if (selectedRow != -1) {
+                int id = (int) bookTable.getValueAt(selectedRow, 0);
+                String titulo = (String) bookTable.getValueAt(selectedRow, 1);
+
+                String prazoStr = JOptionPane.showInputDialog("Informe o novo prazo de empréstimos em dias para o livro '" + titulo + "':");
+                if (prazoStr != null) {
                     try {
                         int prazo = Integer.parseInt(prazoStr);
-                        livro.setPrazoEntrega(prazo);
-                        livroDAO.editarLivro(livro);
+                        livroDAO.atualizarPrazo(id, prazo);
                         atualizarListaLivros();
                     } catch (NumberFormatException ex) {
                         JOptionPane.showMessageDialog(null, "O prazo de empréstimo deve ser um número inteiro.");
                     } catch (SQLException ex) {
-                        JOptionPane.showMessageDialog(null, "Erro ao atualizar prazo de entrega: " + ex.getMessage());
+                        throw new RuntimeException(ex);
                     }
-                } else {
-                    JOptionPane.showMessageDialog(null, "Livro não encontrado.");
                 }
-            } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(null, "Erro ao pesquisar livros: " + ex.getMessage());
+            } else {
+                JOptionPane.showMessageDialog(null, "Selecione um livro para atualizar o prazo de entrega.");
             }
         });
 
@@ -257,11 +255,11 @@ public class Menu extends JFrame {
     private void atualizarListaLivros() {
         try {
             List<Livro> livros = livroDAO.getLivros();
-            StringBuilder sb = new StringBuilder();
+            DefaultTableModel model = (DefaultTableModel) bookTable.getModel();
+            model.setRowCount(0); // Limpa a tabela
             for (Livro livro : livros) {
-                sb.append(livro).append("\n");
+                model.addRow(new Object[]{livro.getId(), livro.getTitulo(), livro.getAutor(), livro.getCategoria(), livro.getIsbn(), livro.getPrazoEntrega(), livro.isDisponibilidade()});
             }
-            bookListArea.setText(sb.toString());
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(null, "Erro ao atualizar lista de livros: " + ex.getMessage());
         }
@@ -285,11 +283,8 @@ public class Menu extends JFrame {
                                 "disponibilidade BOOLEAN)"
                 );
                 Menu menu = new Menu(livroDAO);
-                menu.setVisible(true);
             } catch (SQLException e) {
                 System.err.println("Erro ao criar a tabela: " + e.getMessage());
-                Logger logger = LoggerFactory.getLogger(Menu.class);
-                logger.error("Erro ao criar a tabela: " + e.getMessage());
             }
         });
     }

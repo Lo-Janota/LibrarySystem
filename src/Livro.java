@@ -26,6 +26,9 @@ class Livro {
         this.disponibilidade = disponibilidade;
     }
 
+    public Livro(int id, String titulo) {
+    }
+
     public int getId() {
         return id;
     }
@@ -82,7 +85,7 @@ class Livro {
         this.disponibilidade = disponibilidade;
     }
 
-    @Override
+    /*@Override
     public String toString() {
         return "Livro: " +
                 "Id = " + id +
@@ -92,5 +95,5 @@ class Livro {
                 " | ISBN = " + isbn +
                 " | Prazo de Entrega = " + prazoEntrega +
                 " dias | Disponibilidade = " + (disponibilidade ? "Disponível" : "Indisponível");
-    }
+    } */
 }

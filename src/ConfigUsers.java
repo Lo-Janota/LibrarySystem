@@ -247,17 +247,17 @@ public class ConfigUsers extends JPanel {
     }
 
     private void exibirTelaRemoverUsuario() {
-        String nomeUsuario = JOptionPane.showInputDialog("Digite o nome do usuário a ser removido:");
+        String nomeUsuario = JOptionPane.showInputDialog("Digite o código do usuário a ser removido:");
         if (nomeUsuario != null && !nomeUsuario.isEmpty()) {
             removerUsuario(nomeUsuario);
             atualizarListaUsuarios();
         }
     }
 
-    private void removerUsuario(String nomeUsuario) {
+    private void removerUsuario(String codigoUsuario) {
         try {
-            PreparedStatement statement = conn.prepareStatement("DELETE FROM usuarios WHERE nome = ?");
-            statement.setString(1, nomeUsuario);
+            PreparedStatement statement = conn.prepareStatement("DELETE FROM usuarios WHERE codigo = ?");
+            statement.setString(1, codigoUsuario);
             int rowsDeleted = statement.executeUpdate();
             if (rowsDeleted > 0) {
                 JOptionPane.showMessageDialog(null, "Usuário removido com sucesso.", "Sucesso", JOptionPane.INFORMATION_MESSAGE);

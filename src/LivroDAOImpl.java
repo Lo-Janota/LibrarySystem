@@ -91,4 +91,14 @@ public class LivroDAOImpl implements LivroDAO {
         }
         return livros;
     }
+
+    @Override
+    public void atualizarPrazo(int id, int prazo) throws SQLException {
+        String query = "UPDATE livros SET prazoEntrega = ? WHERE id = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, prazo);
+            preparedStatement.setInt(2, id);
+            preparedStatement.executeUpdate();
+        }
+    }
 }
