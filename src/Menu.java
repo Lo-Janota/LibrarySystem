@@ -212,7 +212,8 @@ public class Menu extends JFrame {
                 int confirmacao = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover o livro '" + titulo + "'?", "Confirmar Remoção", JOptionPane.YES_NO_OPTION);
                 if (confirmacao == JOptionPane.YES_OPTION) {
                     try {
-                        Livro livro = new Livro(id, titulo);
+                        Livro livro = new Livro();
+                        livro.setId(id);
                         livroDAO.removerLivro(livro);
                         atualizarListaLivros();
                         JOptionPane.showMessageDialog(null, "Livro removido com sucesso!");

@@ -26,51 +26,35 @@ class Livro {
         this.disponibilidade = disponibilidade;
     }
 
-    public Livro(int id, String titulo) {
+    public Livro() {
     }
 
     public int getId() {
         return id;
     }
 
-    public String getTitulo() {
-        return titulo;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public void setTitulo(String titulo) {
-        this.titulo = titulo;
+    public String getTitulo() {
+        return titulo;
     }
 
     public String getAutor() {
         return autor;
     }
 
-    public void setAutor(String autor) {
-        this.autor = autor;
-    }
-
     public String getCategoria() {
         return categoria;
-    }
-
-    public void setCategoria(String categoria) {
-        this.categoria = categoria;
     }
 
     public int getIsbn() {
         return isbn;
     }
 
-    public void setIsbn(int isbn) {
-        this.isbn = isbn;
-    }
-
     public int getPrazoEntrega() {
         return prazoEntrega;
-    }
-
-    public void setPrazoEntrega(int prazoEntrega) {
-        this.prazoEntrega = prazoEntrega;
     }
 
     public boolean isDisponibilidade() {
@@ -81,19 +65,4 @@ class Livro {
         return disponibilidade;
     }
 
-    public void setDisponibilidade(boolean disponibilidade) {
-        this.disponibilidade = disponibilidade;
-    }
-
-    /*@Override
-    public String toString() {
-        return "Livro: " +
-                "Id = " + id +
-                " | Título = '" + titulo + '\'' +
-                " | Autor = '" + autor + '\'' +
-                " | Categoria = '" + categoria + '\'' +
-                " | ISBN = " + isbn +
-                " | Prazo de Entrega = " + prazoEntrega +
-                " dias | Disponibilidade = " + (disponibilidade ? "Disponível" : "Indisponível");
-    } */
 }

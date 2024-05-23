@@ -70,7 +70,14 @@ public class ConfigUsers extends JPanel {
         removeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                exibirTelaRemoverUsuario();
+                int selectedRow = userTable.getSelectedRow();
+                if (selectedRow != -1) {
+                    int idUsuario = (Integer) tableModel.getValueAt(selectedRow, 0);
+                    String nomeUsuario = (String) tableModel.getValueAt(selectedRow, 2);
+                    exibirTelaRemoverUsuario(idUsuario, nomeUsuario);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Selecione um usuário para remover.", "Erro", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
 
@@ -200,6 +207,14 @@ public class ConfigUsers extends JPanel {
         }
     }
 
+    private void exibirTelaRemoverUsuario(int idUsuario, String nomeUsuario) {
+        int confirmacao = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover o usuário '" + nomeUsuario + "'?", "Confirmar Remoção", JOptionPane.YES_NO_OPTION);
+        if (confirmacao == JOptionPane.YES_OPTION) {
+            removerUsuario(idUsuario);
+            atualizarListaUsuarios();
+        }
+    }
+
     private boolean codigoExiste(String codigo) {
         try {
             PreparedStatement statement = conn.prepareStatement("SELECT * FROM usuarios WHERE codigo = ?");
@@ -234,72 +249,56 @@ public class ConfigUsers extends JPanel {
             statement.setString(2, novaSenha);
             statement.setString(3, novaPermissao);
             statement.setString(4, nomeAntigo);
-            int rowsUpdated = statement.executeUpdate();
-            if (rowsUpdated > 0) {
-                JOptionPane.showMessageDialog(null, "Usuário editado com sucesso.", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(null, "Usuário não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
-            }
+            statement.executeUpdate();
+            JOptionPane.showMessageDialog(null, "Usuário atualizado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
         } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Erro ao editar usuário.", "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Erro ao atualizar usuário.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void exibirTelaRemoverUsuario() {
-        String nomeUsuario = JOptionPane.showInputDialog("Digite o código do usuário a ser removido:");
-        if (nomeUsuario != null && !nomeUsuario.isEmpty()) {
-            removerUsuario(nomeUsuario);
-            atualizarListaUsuarios();
-        }
-    }
-
-    private void removerUsuario(String codigoUsuario) {
+    private void removerUsuario(int idUsuario) {
         try {
-            PreparedStatement statement = conn.prepareStatement("DELETE FROM usuarios WHERE codigo = ?");
-            statement.setString(1, codigoUsuario);
-            int rowsDeleted = statement.executeUpdate();
-            if (rowsDeleted > 0) {
-                JOptionPane.showMessageDialog(null, "Usuário removido com sucesso.", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(null, "Usuário não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
-            }
+            PreparedStatement statement = conn.prepareStatement("DELETE FROM usuarios WHERE id = ?");
+            statement.setInt(1, idUsuario);
+            statement.executeUpdate();
+            JOptionPane.showMessageDialog(null, "Usuário removido com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
         } catch (SQLException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Erro ao remover usuário.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void pesquisarUsuario(String criterio) {
-        tableModel.setRowCount(0);
+    private void pesquisarUsuario(String termo) {
+        tableModel.setRowCount(0); // Limpar a tabela antes de inserir os dados atualizados
 
-        try {
-            String query = "SELECT * FROM usuarios WHERE codigo = ? OR nome LIKE ?";
-            PreparedStatement statement = conn.prepareStatement(query);
-            statement.setString(1, criterio);
-            statement.setString(2, "%" + criterio + "%");
-            ResultSet rs = statement.executeQuery();
+        String query = "SELECT * FROM usuarios WHERE codigo LIKE ? OR nome LIKE ?";
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            String likeTerm = "%" + termo + "%";
+            statement.setString(1, likeTerm);
+            statement.setString(2, likeTerm);
 
-            while (rs.next()) {
-                int id = rs.getInt("id");
-                int codigo = rs.getInt("codigo");
-                String nome = rs.getString("nome");
-                String senha = rs.getString("senha");
-                String permissao = rs.getString("permissao");
-                tableModel.addRow(new Object[]{id, codigo, nome, senha, permissao});
+            try (ResultSet rs = statement.executeQuery()) {
+                while (rs.next()) {
+                    int id = rs.getInt("id");
+                    int codigo = rs.getInt("codigo");
+                    String nome = rs.getString("nome");
+                    String senha = rs.getString("senha");
+                    String permissao = rs.getString("permissao");
+                    tableModel.addRow(new Object[]{id, codigo, nome, senha, permissao});
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Erro ao realizar a pesquisa.", "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Erro ao pesquisar usuários.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void atualizarListaUsuarios() {
-        tableModel.setRowCount(0);
+        tableModel.setRowCount(0); // Limpar a tabela antes de inserir os dados atualizados
 
-        try {
-            Statement statement = conn.createStatement();
-            ResultSet rs = statement.executeQuery("SELECT * FROM usuarios");
+        String query = "SELECT * FROM usuarios";
+        try (Statement statement = conn.createStatement(); ResultSet rs = statement.executeQuery(query)) {
             while (rs.next()) {
                 int id = rs.getInt("id");
                 int codigo = rs.getInt("codigo");
@@ -310,9 +309,10 @@ public class ConfigUsers extends JPanel {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Erro ao obter lista de usuários.", "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Erro ao atualizar a lista de usuários.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
@@ -328,4 +328,3 @@ public class ConfigUsers extends JPanel {
         });
     }
 }
-
