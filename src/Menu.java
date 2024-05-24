@@ -209,7 +209,7 @@ public class Menu extends JFrame {
                 int id = (int) bookTable.getValueAt(selectedRow, 0);
                 String titulo = (String) bookTable.getValueAt(selectedRow, 1);
 
-                int confirmacao = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover o livro '" + titulo + "'?", "Confirmar Remoção", JOptionPane.YES_NO_OPTION);
+                int confirmacao = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover o livro '(" + id +") - " + titulo + "'?", "Confirmar Remoção", JOptionPane.YES_NO_OPTION);
                 if (confirmacao == JOptionPane.YES_OPTION) {
                     try {
                         Livro livro = new Livro();
