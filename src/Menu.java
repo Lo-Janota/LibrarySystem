@@ -11,7 +11,8 @@ public class Menu extends JFrame {
     private JButton deleteButton;
     private JButton configButton;
     private JButton editButton;
-    private JButton prazoButton;
+    private JButton emprestimoButton;
+    private JButton devolucaoButton;
     private JTable bookTable;
     private LivroDAO livroDAO;
 
@@ -30,7 +31,8 @@ public class Menu extends JFrame {
         deleteButton = new JButton("Remover");
         configButton = new JButton("Usuarios");
         editButton = new JButton("Editar");
-        prazoButton = new JButton("Prazos");
+        emprestimoButton = new JButton("Empréstimo");
+        devolucaoButton = new JButton("Devolução");
 
         JPanel topPanel = new JPanel(new BorderLayout());
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -40,7 +42,8 @@ public class Menu extends JFrame {
         searchPanel.add(addButton);
         searchPanel.add(editButton);
         searchPanel.add(deleteButton);
-        searchPanel.add(prazoButton);
+        searchPanel.add(emprestimoButton);
+        searchPanel.add(devolucaoButton);
 
         topPanel.add(searchPanel, BorderLayout.CENTER);
         topPanel.add(configButton, BorderLayout.WEST);
@@ -51,7 +54,8 @@ public class Menu extends JFrame {
         deleteButton.setPreferredSize(buttonSize);
         configButton.setPreferredSize(buttonSize);
         editButton.setPreferredSize(buttonSize);
-        prazoButton.setPreferredSize(buttonSize);
+        emprestimoButton.setPreferredSize(buttonSize);
+        devolucaoButton.setPreferredSize(buttonSize);
 
         JPanel tablePanel = new JPanel(new BorderLayout());
         DefaultTableModel tableModel = new DefaultTableModel();
@@ -226,26 +230,45 @@ public class Menu extends JFrame {
             }
         });
 
-        prazoButton.addActionListener(e -> {
+        emprestimoButton.addActionListener(e -> {
             int selectedRow = bookTable.getSelectedRow();
             if (selectedRow != -1) {
-                int id = (int) bookTable.getValueAt(selectedRow, 0);
-                String titulo = (String) bookTable.getValueAt(selectedRow, 1);
+                int livroId = (int) bookTable.getValueAt(selectedRow, 0);
+                int prazo = (int) bookTable.getValueAt(selectedRow, 5); // Obtém o prazo do livro
+                String alunoCodigo = JOptionPane.showInputDialog("Informe o código do aluno:");
 
-                String prazoStr = JOptionPane.showInputDialog("Informe o novo prazo de empréstimos em dias para o livro '" + titulo + "':");
-                if (prazoStr != null) {
-                    try {
-                        int prazo = Integer.parseInt(prazoStr);
-                        livroDAO.atualizarPrazo(id, prazo);
-                        atualizarListaLivros();
-                    } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(null, "O prazo de empréstimo deve ser um número inteiro.");
-                    } catch (SQLException ex) {
-                        throw new RuntimeException(ex);
-                    }
+                try {
+                    // Registrar o empréstimo no banco de dados
+                    livroDAO.registrarEmprestimo(livroId, alunoCodigo, prazo);
+
+                    // Atualizar a lista de livros na tela
+                    atualizarListaLivros();
+
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(null, "Erro ao realizar empréstimo: " + ex.getMessage());
                 }
             } else {
-                JOptionPane.showMessageDialog(null, "Selecione um livro para atualizar o prazo de entrega.");
+                JOptionPane.showMessageDialog(null, "Selecione um livro para empréstimo.");
+            }
+        });
+
+        devolucaoButton.addActionListener(e -> {
+            int selectedRow = bookTable.getSelectedRow();
+            if (selectedRow != -1) {
+                int livroId = (int) bookTable.getValueAt(selectedRow, 0);
+
+                try {
+                    // Registrar a devolução no banco de dados
+                    livroDAO.registrarDevolucao(livroId);
+
+                    // Atualizar a lista de livros na tela
+                    atualizarListaLivros();
+
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(null, "Erro ao realizar devolução: " + ex.getMessage());
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Selecione um livro para devolução.");
             }
         });
 
@@ -257,7 +280,7 @@ public class Menu extends JFrame {
         try {
             List<Livro> livros = livroDAO.getLivros();
             DefaultTableModel model = (DefaultTableModel) bookTable.getModel();
-            model.setRowCount(0); // Limpa a tabela
+            model.setRowCount(0);
             for (Livro livro : livros) {
                 model.addRow(new Object[]{livro.getId(), livro.getTitulo(), livro.getAutor(), livro.getCategoria(), livro.getIsbn(), livro.getPrazoEntrega(), livro.isDisponibilidade()});
             }
@@ -283,10 +306,12 @@ public class Menu extends JFrame {
                                 "prazoEntrega INTEGER, " +
                                 "disponibilidade BOOLEAN)"
                 );
-                Menu menu = new Menu(livroDAO);
+
+                new Menu(livroDAO);
             } catch (SQLException e) {
                 System.err.println("Erro ao criar a tabela: " + e.getMessage());
             }
         });
     }
+
 }
