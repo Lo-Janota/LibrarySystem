@@ -20,7 +20,7 @@ public class Menu extends JFrame {
         this.livroDAO = livroDAO;
 
         setTitle("Menu Biblioteca");
-        setSize(900, 400);
+        setSize(1000, 400);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
@@ -48,7 +48,7 @@ public class Menu extends JFrame {
         topPanel.add(searchPanel, BorderLayout.CENTER);
         topPanel.add(configButton, BorderLayout.WEST);
 
-        Dimension buttonSize = new Dimension(85, 30);
+        Dimension buttonSize = new Dimension(100, 30);
         searchButton.setPreferredSize(buttonSize);
         addButton.setPreferredSize(buttonSize);
         deleteButton.setPreferredSize(buttonSize);
