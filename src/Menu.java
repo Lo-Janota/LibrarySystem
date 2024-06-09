@@ -274,6 +274,26 @@ public class Menu extends JFrame {
 
         atualizarListaLivros();
         setVisible(true);
+
+        setVisible(true); // Torna a janela visível
+        atualizarVisibilidadeBotoes("Funcionario"); // Define a visibilidade inicial dos botões para usuários
+    }
+
+    public void atualizarVisibilidadeBotoes(String permissao) {
+        // Verifica o nível de permissão e esconde ou mostra os botões conforme necessário
+        if ("USUARIO".equals(permissao)) {
+            // Esconde os botões destinados apenas para funcionário
+            addButton.setVisible(false);
+            editButton.setVisible(false);
+            deleteButton.setVisible(false);
+            configButton.setVisible(false);
+        } else if ("FUNCIONARIO".equals(permissao)) {
+            // Mostra todos os botões
+            addButton.setVisible(true);
+            editButton.setVisible(true);
+            deleteButton.setVisible(true);
+            configButton.setVisible(true);
+        }
     }
 
     private void atualizarListaLivros() {
@@ -314,4 +334,7 @@ public class Menu extends JFrame {
         });
     }
 
+
 }
+
+

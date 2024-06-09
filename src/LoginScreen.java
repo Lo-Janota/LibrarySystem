@@ -96,8 +96,12 @@ public class LoginScreen extends JFrame {
             try {
                 Connection conn = obterConexao();
                 if (conn != null) {
-                    if (validarUsuario(conn, usernameField.getText(), new String(passwordField.getPassword()))) {
-                        new Menu(new LivroDAOImpl(conn)).setVisible(true);
+                    String permissao = obterPermissaoUsuario(conn, usernameField.getText(), new String(passwordField.getPassword()));
+                    if (permissao != null) {
+                        // Atualiza a visibilidade dos botões no menu com base na permissão do usuário
+                        Menu menu = new Menu(new LivroDAOImpl(conn));
+                        menu.atualizarVisibilidadeBotoes(permissao);
+                        menu.setVisible(true);
                         setVisible(false);
                     } else {
                         JOptionPane.showMessageDialog(LoginScreen.this, "Usuário ou senha incorretos.");
@@ -110,6 +114,7 @@ public class LoginScreen extends JFrame {
             }
         }
     }
+
 
     private Connection obterConexao() throws SQLException {
         String url = "jdbc:sqlite:dataBase.db"; // Atualize com o caminho do seu banco de dados
@@ -137,22 +142,20 @@ public class LoginScreen extends JFrame {
         }
     }
 
-    private boolean validarUsuario(Connection conn, String codigo, String senha) throws SQLException {
-        String sql = "SELECT * FROM usuarios WHERE codigo = ? AND senha = ?";
+    private String obterPermissaoUsuario(Connection conn, String codigo, String senha) throws SQLException {
+        String sql = "SELECT permissao FROM usuarios WHERE codigo = ? AND senha = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, codigo);
             pstmt.setString(2, senha);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    String permissao = rs.getString("permissao");
-                    if ("FUNCIONARIO".equals(permissao) || "USUARIO".equals(permissao)) {
-                        return true;
-                    }
+                    return rs.getString("permissao");
                 }
             }
         }
-        return false;
+        return null; // Retorna null se o usuário não for encontrado
     }
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new LoginScreen().setVisible(true));
