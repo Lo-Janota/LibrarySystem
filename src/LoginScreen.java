@@ -134,7 +134,7 @@ public class LoginScreen extends JFrame {
 
             // Insere o usuário padrão ADMIN se ele não existir
             String sqlAdmin = "INSERT INTO usuarios (codigo, nome, senha, permissao) " +
-                    "SELECT 1, 'ADMIN', 'admin', 'FUNCIONARIO' " +
+                    "SELECT 'admin', 'ADMIN', 'admin', 'FUNCIONARIO' " +
                     "WHERE NOT EXISTS (SELECT 1 FROM usuarios WHERE nome = 'ADMIN')";
             stmt.executeUpdate(sqlAdmin);
         } catch (SQLException e) {

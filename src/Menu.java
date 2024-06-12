@@ -275,8 +275,10 @@ public class Menu extends JFrame {
         atualizarListaLivros();
         setVisible(true);
 
+        /*
         setVisible(true); // Torna a janela visível
-        atualizarVisibilidadeBotoes("Funcionario"); // Define a visibilidade inicial dos botões para usuários
+        atualizarVisibilidadeBotoes("Funcionario"); // Define a visibilidade inicial dos botões para usuário
+         */
     }
 
     public void atualizarVisibilidadeBotoes(String permissao) {
