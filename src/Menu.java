@@ -11,8 +11,7 @@ public class Menu extends JFrame {
     private JButton deleteButton;
     private JButton configButton;
     private JButton editButton;
-    private JButton emprestimoButton;
-    private JButton devolucaoButton;
+    private JButton empDevButton;
     private JTable bookTable;
     private LivroDAO livroDAO;
 
@@ -31,8 +30,7 @@ public class Menu extends JFrame {
         deleteButton = new JButton("Remover");
         configButton = new JButton("Usuarios");
         editButton = new JButton("Editar");
-        emprestimoButton = new JButton("Empréstimo");
-        devolucaoButton = new JButton("Devolução");
+        empDevButton = new JButton("Empréstimo/Devolução");
 
         JPanel topPanel = new JPanel(new BorderLayout());
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -42,20 +40,19 @@ public class Menu extends JFrame {
         searchPanel.add(addButton);
         searchPanel.add(editButton);
         searchPanel.add(deleteButton);
-        searchPanel.add(emprestimoButton);
-        searchPanel.add(devolucaoButton);
+        searchPanel.add(empDevButton);
 
         topPanel.add(searchPanel, BorderLayout.CENTER);
         topPanel.add(configButton, BorderLayout.WEST);
 
         Dimension buttonSize = new Dimension(100, 30);
+        Dimension newButtonSize = new Dimension(180, 30);
         searchButton.setPreferredSize(buttonSize);
         addButton.setPreferredSize(buttonSize);
         deleteButton.setPreferredSize(buttonSize);
         configButton.setPreferredSize(buttonSize);
         editButton.setPreferredSize(buttonSize);
-        emprestimoButton.setPreferredSize(buttonSize);
-        devolucaoButton.setPreferredSize(buttonSize);
+        empDevButton.setPreferredSize(newButtonSize);
 
         JPanel tablePanel = new JPanel(new BorderLayout());
         DefaultTableModel tableModel = new DefaultTableModel();
@@ -230,46 +227,16 @@ public class Menu extends JFrame {
             }
         });
 
-        emprestimoButton.addActionListener(e -> {
-            int selectedRow = bookTable.getSelectedRow();
-            if (selectedRow != -1) {
-                int livroId = (int) bookTable.getValueAt(selectedRow, 0);
-                int prazo = (int) bookTable.getValueAt(selectedRow, 5); // Obtém o prazo do livro
-                String alunoCodigo = JOptionPane.showInputDialog("Informe o código do aluno:");
+        empDevButton.addActionListener(e -> {
+            JFrame empDevFrame = new JFrame("Empréstimo/Devolução");
+            empDevFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            empDevFrame.setSize(800, 400);
+            empDevFrame.setLocationRelativeTo(null);
 
-                try {
-                    // Registrar o empréstimo no banco de dados
-                    livroDAO.registrarEmprestimo(livroId, alunoCodigo, prazo);
+            EmprestimoDevolucao empDevPanel = new EmprestimoDevolucao(livroDAO);
+            empDevFrame.add(empDevPanel);
 
-                    // Atualizar a lista de livros na tela
-                    atualizarListaLivros();
-
-                } catch (SQLException ex) {
-                    JOptionPane.showMessageDialog(null, "Erro ao realizar empréstimo: " + ex.getMessage());
-                }
-            } else {
-                JOptionPane.showMessageDialog(null, "Selecione um livro para empréstimo.");
-            }
-        });
-
-        devolucaoButton.addActionListener(e -> {
-            int selectedRow = bookTable.getSelectedRow();
-            if (selectedRow != -1) {
-                int livroId = (int) bookTable.getValueAt(selectedRow, 0);
-
-                try {
-                    // Registrar a devolução no banco de dados
-                    livroDAO.registrarDevolucao(livroId);
-
-                    // Atualizar a lista de livros na tela
-                    atualizarListaLivros();
-
-                } catch (SQLException ex) {
-                    JOptionPane.showMessageDialog(null, "Erro ao realizar devolução: " + ex.getMessage());
-                }
-            } else {
-                JOptionPane.showMessageDialog(null, "Selecione um livro para devolução.");
-            }
+            empDevFrame.setVisible(true);
         });
 
         atualizarListaLivros();

@@ -155,42 +155,41 @@ public class LivroDAOImpl implements LivroDAO {
         }
     }
 
+    // Método para listar apenas livros disponíveis com pesquisa
+    public List<Livro> pesquisarLivrosDisponiveis(String termoPesquisa) throws SQLException {
+        List<Livro> livros = new ArrayList<>();
+        String sql = "SELECT * FROM livros WHERE disponibilidade = 1 AND (titulo LIKE ? OR autor LIKE ? OR categoria LIKE ? OR isbn LIKE ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            String pesquisa = "%" + termoPesquisa + "%";
+            pstmt.setString(1, pesquisa);
+            pstmt.setString(2, pesquisa);
+            pstmt.setString(3, pesquisa);
+            pstmt.setString(4, pesquisa);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    int id = rs.getInt("id");
+                    String titulo = rs.getString("titulo");
+                    String autor = rs.getString("autor");
+                    String categoria = rs.getString("categoria");
+                    int isbn = rs.getInt("isbn");
+                    int prazoEntrega = rs.getInt("prazoEntrega");
+                    boolean disponibilidade = rs.getBoolean("disponibilidade");
 
-
-    @Override
-    public void registrarDevolucao(int livroId) throws SQLException {
-        // Verificar a disponibilidade do livro
-        String queryCheckDisponibilidade = "SELECT disponibilidade FROM livros WHERE id = ?";
-        boolean disponibilidade = true;
-
-        try (PreparedStatement preparedStatementCheckDisponibilidade = connection.prepareStatement(queryCheckDisponibilidade)) {
-            preparedStatementCheckDisponibilidade.setInt(1, livroId);
-            ResultSet resultSet = preparedStatementCheckDisponibilidade.executeQuery();
-            if (resultSet.next()) {
-                disponibilidade = resultSet.getBoolean("disponibilidade");
+                    Livro livro = new Livro(id, titulo, autor, categoria, isbn, prazoEntrega, disponibilidade);
+                    livros.add(livro);
+                }
             }
         }
+        return livros;
+    }
 
-        // Se o livro estiver emprestado (disponibilidade = false), permitir a devolução
-        if (!disponibilidade) {
-            // Atualizar a disponibilidade do livro para true
-            String queryUpdateLivro = "UPDATE livros SET disponibilidade = ? WHERE id = ?";
-            try (PreparedStatement preparedStatementUpdateLivro = connection.prepareStatement(queryUpdateLivro)) {
-                preparedStatementUpdateLivro.setBoolean(1, true);
-                preparedStatementUpdateLivro.setInt(2, livroId);
-                preparedStatementUpdateLivro.executeUpdate();
-            }
-
-            // Remover o registro de empréstimo
-            String queryDeleteEmprestimo = "DELETE FROM emprestimos WHERE livroId = ?";
-            try (PreparedStatement preparedStatementDeleteEmprestimo = connection.prepareStatement(queryDeleteEmprestimo)) {
-                preparedStatementDeleteEmprestimo.setInt(1, livroId);
-                preparedStatementDeleteEmprestimo.executeUpdate();
-            }
-
-            JOptionPane.showMessageDialog(null, "Livro devolvido com sucesso.", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(null, "Erro na devolução! O livro não estava emprestado.", "Erro", JOptionPane.ERROR_MESSAGE);
+    // Método para atualizar a disponibilidade do livro
+    public void atualizarDisponibilidade(int livroId, boolean disponibilidade) throws SQLException {
+        String sql = "UPDATE livros SET disponibilidade = ? WHERE id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setBoolean(1, disponibilidade);
+            pstmt.setInt(2, livroId);
+            pstmt.executeUpdate();
         }
     }
 

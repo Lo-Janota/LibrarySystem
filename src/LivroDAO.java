@@ -23,6 +23,10 @@ public interface LivroDAO {
             throws SQLException;
     void registrarEmprestimo(int livroId, String alunoCodigo, int prazo)
             throws SQLException;
-    void registrarDevolucao(int livroId)
+
+    void atualizarDisponibilidade(int i, boolean b)
+            throws SQLException;
+
+    List<Livro> pesquisarLivrosDisponiveis(String termoPesquisa)
             throws SQLException;
 }
