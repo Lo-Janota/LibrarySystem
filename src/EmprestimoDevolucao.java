@@ -7,7 +7,6 @@ import java.util.List;
 public class EmprestimoDevolucao extends JPanel {
     private LivroDAO livroDAO;
     private JTable emprestimosTable;
-    private JTextField alunoCodigoField;
     private JTextField searchField;
     private JButton searchButton;
 
@@ -47,13 +46,23 @@ public class EmprestimoDevolucao extends JPanel {
         emprestimoFrame.setSize(400, 200);
         emprestimoFrame.setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(3, 2));
-        panel.add(new JLabel("Código do Aluno:"));
+        JPanel panel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        panel.add(new JLabel("Código do Aluno:"), gbc);
         JTextField alunoField = new JTextField(10);
-        panel.add(alunoField);
-        panel.add(new JLabel("Código do Livro:"));
+        gbc.gridx = 1;
+        panel.add(alunoField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        panel.add(new JLabel("Código do Livro:"), gbc);
         JTextField livroField = new JTextField(10);
-        panel.add(livroField);
+        gbc.gridx = 1;
+        panel.add(livroField, gbc);
 
         JButton confirmarButton = new JButton("Confirmar");
         confirmarButton.addActionListener(e -> {
@@ -68,7 +77,9 @@ public class EmprestimoDevolucao extends JPanel {
             }
             emprestimoFrame.dispose();
         });
-        panel.add(confirmarButton);
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        panel.add(confirmarButton, gbc);
 
         emprestimoFrame.add(panel);
         emprestimoFrame.setVisible(true);
@@ -80,17 +91,26 @@ public class EmprestimoDevolucao extends JPanel {
         devolucaoFrame.setSize(400, 200);
         devolucaoFrame.setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(3, 2));
-        panel.add(new JLabel("Código do Aluno:"));
+        JPanel panel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        panel.add(new JLabel("Código do Aluno:"), gbc);
         JTextField alunoField = new JTextField(10);
-        panel.add(alunoField);
-        panel.add(new JLabel("Código do Livro:"));
+        gbc.gridx = 1;
+        panel.add(alunoField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        panel.add(new JLabel("Código do Livro:"), gbc);
         JTextField livroField = new JTextField(10);
-        panel.add(livroField);
+        gbc.gridx = 1;
+        panel.add(livroField, gbc);
 
         JButton confirmarButton = new JButton("Confirmar");
         confirmarButton.addActionListener(e -> {
-            String alunoCodigo = alunoField.getText();
             String livroCodigo = livroField.getText();
             // Lógica para registrar devolução e atualizar disponibilidade
             try {
@@ -102,7 +122,9 @@ public class EmprestimoDevolucao extends JPanel {
             }
             devolucaoFrame.dispose();
         });
-        panel.add(confirmarButton);
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        panel.add(confirmarButton, gbc);
 
         devolucaoFrame.add(panel);
         devolucaoFrame.setVisible(true);
